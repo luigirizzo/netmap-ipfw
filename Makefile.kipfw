@@ -1,0 +1,165 @@
+# gnu Makefile to build a userland version of the 
+# kernel code for ipfw+dummynet
+#
+# The kernel code is compiled with appropriate flags to make
+# it see a kernel-like environment.
+# The userland emulation code is compiler with regular flags.
+
+# M is the current directory, used in recursive builds
+# so we allow it to be overridden
+include ../Makefile.inc
+VPATH = ../extra:../sys/netpfil/ipfw:../sys/netinet:../sys/net
+M ?= $(shell pwd)
+OBJPATH = $(M)/../$(OBJDIR)
+
+ifeq ($(OSARCH),Darwin)
+	CFLAGS2 += -D__BSD_VISIBLE
+	EFILES_.	+= libutil.h
+	EFILES_sys	+= condvar.h priv.h _lock.h rmlock.h
+	EFILES_machine	+= in_cksum.h
+	EFILES_netinet	+= ip_carp.h pim.h sctp.h
+	EFILES_net	+= netisr.h vnet.h
+endif
+
+ifeq ($(OSARCH),Linux)
+	CFLAGS2		+= -D__BSD_VISIBLE
+	CFLAGS2		+= -include ../extra/linux_defs.h
+	CFLAGS2		+= -Wno-unused-but-set-variable
+	EFILES_.	+= libutil.h
+	EFILES_sys	+= condvar.h priv.h _lock.h rmlock.h
+	EFILES_sys	+= lock.h ucred.h # taskqueue.h
+	EFILES_sys	+= sockio.h
+	EFILES_machine	+= in_cksum.h
+	EFILES_netinet	+= in_pcb.h ip_carp.h pim.h sctp.h tcp_var.h
+	EFILES_net	+= if_types.h bpf.h netisr.h vnet.h
+	EFILES_linux	+= module.h
+endif
+
+ifeq ($(OSARCH),Windows)
+	CFLAGS2		+= -D__BSD_VISIBLE
+#	CFLAGS2		+= -include ../extra/linux_defs.h
+	CFLAGS2		+= -Wno-unused-but-set-variable
+#	EFILES_.	+= libutil.h
+#	EFILES_sys	+= condvar.h priv.h _lock.h rmlock.h
+#	EFILES_sys	+= lock.h ucred.h # taskqueue.h
+#	EFILES_sys	+= sockio.h
+#	EFILES_machine	+= in_cksum.h
+#	EFILES_netinet	+= in_pcb.h ip_carp.h pim.h sctp.h tcp_var.h
+#	EFILES_net	+= if_types.h bpf.h netisr.h vnet.h
+#	EFILES_linux	+= module.h
+	EFILES_sys	+= sockio.h
+	EFILES_net	+= ethernet.h
+	EFILES_sys	+= condvar.h priv.h socketvar.h ucred.h
+	EFILES_net	+= vnet.h
+	EFILES_netinet	+= in_pcb.h ip_carp.h pim.h sctp.h tcp_var.h
+endif
+
+NETMAP_FLAGS = -DWITH_NETMAP -I$(NETMAP_INC)
+
+E_CFLAGS += $(INCDIRS)
+E_CFLAGS += -include $(M)/../extra/glue.h		# headers
+E_CFLAGS += -include $(M)/../extra/missing.h		# headers
+E_CFLAGS += -O2 -Wall -Werror -fno-strict-aliasing
+E_CFLAGS += -g
+E_CFLAGS += -DKERNEL_SIDE	# build the kernel side of the firewall
+E_CFLAGS += -DUSERSPACE	# communicate through userspace
+E_CFLAGS += $(EFLAGS) $(NETMAP_FLAGS)
+E_CFLAGS += -DINET
+E_CFLAGS += -DIPFIREWALL_DEFAULT_TO_ACCEPT
+E_CFLAGS += -D_BSD_SOURCE 
+# many of the kernel headers need _KERNEL
+E_CFLAGS += -D_KERNEL
+E_CFLAGS += $(CFLAGS2)
+
+#ipfw + dummynet section, other parts are not compiled in
+SRCS_IPFW	 = ip_fw2.c ip_fw_pfil.c ip_fw_sockopt.c
+SRCS_IPFW	+= ip_fw_dynamic.c ip_fw_table.c
+SRCS_IPFW	+= ip_fw_log.c
+SRCS_IPFW	+= ip_dummynet.c ip_dn_io.c ip_dn_glue.c
+SRCS_IPFW	+= dn_heap.c
+SRCS_IPFW	+= dn_sched_fifo.c dn_sched_wf2q.c
+SRCS_IPFW	+= dn_sched_rr.c dn_sched_qfq.c
+SRCS_IPFW	+= dn_sched_prio.c
+SRCS_NET	 = radix.c
+SRCS_NETINET	 = in_cksum.c
+# Module glue and functions missing in linux
+IPFW_SRCS	= $(SRCS_IPFW) $(SRCS_NET) $(SRCS_NETINET)
+IPFW_SRCS += ipfw2_mod.c # bsd_compat.c
+
+IPFW_SRCS += missing.c session.c netmap_io.c
+IPFW_CFLAGS= -DINET
+
+E_CFLAGS += -Dradix
+MOD := kipfw
+
+LIBS= -lpthread
+CFLAGS = $(E_CFLAGS)
+
+IPFW_OBJS= $(IPFW_SRCS:%.c=%.o)
+
+all: include_e $(MOD)
+
+# entries to create empty files
+EFILES_.	+= opt_inet.h opt_ipsec.h opt_ipdivert.h
+EFILES_.	+= opt_inet6.h opt_ipfw.h opt_mpath.h
+EFILES_.	+= opt_mbuf_stress_test.h opt_param.h
+EFILES_.	+= timeconv.h
+
+EFILES_altq	+= if_altq.h
+
+EFILES_net	+= if_var.h route.h if_clone.h
+EFILES_netpfil/pf	+= pf_mtag.h
+EFILES_netinet	+= in_var.h ip_var.h udp_var.h
+EFILES_netinet6	+= ip6_var.h
+EFILES_sys	+= proc.h sockopt.h sysctl.h
+# new
+EFILES_sys	+= mutex.h _mutex.h _rwlock.h rwlock.h
+EFILES_sys	+= eventhandler.h
+EFILES_sys	+= jail.h ktr.h
+
+#EFILES += sys/_lock.h sys/_rwlock.h sys/rwlock.h sys/rmlock.h sys/_mutex.h sys/mutex.h
+#EFILES += sys/condvar.h sys/eventhandler.h # sys/domain.h
+#EFILES += sys/limits.h sys/lock.h sys/mutex.h sys/priv.h
+#EFILES += sys/proc.h sys/rwlock.h sys/socket.h sys/socketvar.h
+#EFILES += sys/sysctl.h sys/time.h sys/ucred.h
+
+
+#EFILES += vm/uma_int.h vm/vm_int.h vm/uma_dbg.h
+#EFILES += vm/vm_dbg.h vm/vm_page.h vm/vm.h
+#EFILES += sys/rwlock.h sys/sysctl.h
+
+# first make a list of directories from variable names
+EDIRS= $(subst EFILES_,,$(filter EFILES_%,$(.VARIABLES)))
+# then prepend the directory name to individual files.
+#       $(empty) serves to interpret the following space literally,
+#       and the ":  = " substitution packs spaces into one.
+EFILES = $(foreach i,$(EDIRS),$(subst $(empty) , $(i)/, $(EFILES_$(i):  = )))
+
+include_e:
+	-@echo "Building $(OBJPATH)/include_e ..."
+	-$(HIDE) rm -rf $(OBJPATH)/include_e opt_*
+	-$(HIDE) mkdir -p $(OBJPATH)/include_e
+	-$(HIDE) (cd $(OBJPATH)/include_e; mkdir -p $(EDIRS); touch $(EFILES) )
+
+
+$(IPFW_OBJS) : ../extra/glue.h
+
+ip_fw2.o ip_dummynet.o: # EFLAGS= -include missing.h
+
+radix.o:#	CFLAGS += -U_KERNEL
+
+# session.o:	CFLAGS = -O2
+nm_util.o:	CFLAGS = -O2 -Wall -Werror $(NETMAP_FLAGS)
+
+$(MOD): $(IPFW_OBJS)
+	$(MSG) "   LD $@"
+	$(HIDE)$(CC) -o $@ $^ $(LIBS)
+
+clean:
+	-rm -f *.o $(DN) $(MOD)
+	-rm -rf include_e
+
+diff:
+	@-(for i in $(SRCS_IPFW) ; do diff -ubw $(BSD_HEAD)/sys/netpfil/ipfw/$$i .; done)
+	@-(for i in $(SRCS_NET) ; do diff -ubw $(BSD_HEAD)/sys/net/$$i . ; done)
+	@-(for i in $(SRCS_NETINET) ; do diff -ubw $(BSD_HEAD)/sys/netinet/$$i .; done)
