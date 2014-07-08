@@ -178,7 +178,7 @@ sysctlbyname(const char *name, void *oldp, size_t *oldlenp, void *newp,
 	char* pdata;
 	FILE* fp;
 
-	if((oldlenp != NULL) && (*oldlenp < 0))
+	if((oldlenp != NULL) && ((int)*oldlenp < 0))
 		fp = (FILE*)oldp;
 	else
 		fp = stdout;
