@@ -8,7 +8,9 @@
 
 #ifndef _SYS_MBUF_H_
 #define	_SYS_MBUF_H_
-#define	VM_UMA_H // kill this one
+#define	VM_UMA_H // kill this one // maybe not needed
+#define _VM_UMA_H_ // kill this one too
+
 // #include <sys/malloc.h>		/* we use free() */
 /* hopefully queue.h is already included by someone else */
 #include <sys/queue.h>
@@ -88,7 +90,12 @@ struct mbuf {
 /*
  * note we also have M_FASTFWD_OURS mapped to M_PROTO1 0x10
  */
+#ifndef M_SKIP_FIREWALL /* XXX conflict in FreeBSD */
 #define M_SKIP_FIREWALL	0x01		/* skip firewall processing */
+#else
+#define M_PROTO3	0x01 // FreeBSD 10 and 11
+#endif /* XXX conflict in FreeBSD */
+
 #define M_BCAST         0x02 /* send/received as link-level broadcast */
 #define M_MCAST         0x04 /* send/received as link-level multicast */
 #define	M_PROTO1	0x10

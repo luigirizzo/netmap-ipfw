@@ -11,6 +11,7 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <sys/cpuset.h> // freebsd
 #include <net/pfil.h>	// PFIL_IN
 #include <sys/errno.h>
 extern int errno;

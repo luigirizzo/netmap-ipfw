@@ -1,3 +1,8 @@
 # forward to use gmake
-all $(.TARGETS) :
+.PHONY: ipfw kipfw
+
+all:
+	gmake
+
+$(.TARGETS) :
 	gmake MAKE=gmake $(.TARGETS)

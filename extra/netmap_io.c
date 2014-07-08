@@ -29,6 +29,7 @@ int verbose;
 
 #include <sys/malloc.h>	/* M_NOWAIT */
 #include <sys/mbuf.h>	/* mbuf */
+#include <sys/cpuset.h> // FreeBSD
 #include <net/pfil.h>	// PFIL_IN
 #define _KERNEL
 
