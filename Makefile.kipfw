@@ -29,6 +29,7 @@ ifeq ($(OSARCH),Linux)
 	EFILES_sys	+= condvar.h priv.h _lock.h rmlock.h
 	EFILES_sys	+= lock.h ucred.h # taskqueue.h
 	EFILES_sys	+= sockio.h
+	EFILES_sys	+= cpuset.h
 	EFILES_machine	+= in_cksum.h
 	EFILES_netinet	+= in_pcb.h ip_carp.h pim.h sctp.h tcp_var.h
 	EFILES_net	+= if_types.h bpf.h netisr.h vnet.h
