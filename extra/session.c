@@ -583,7 +583,7 @@ mainloop(int argc, char *argv[])
 	}
 #endif /* WITH_NETMAP */
 
-#if 1 // test code: a telnet on 5556 becomes an infinite source
+#if 0 // test code: a telnet on 5556 becomes an infinite source
 	{
 		int net_fd = do_server(addr, port+1);
 		if (net_fd >= 0)
