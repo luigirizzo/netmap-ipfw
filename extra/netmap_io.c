@@ -282,10 +282,13 @@ netmap_read(struct sess *sess, void *arg)
 		ND("exit at slot %d", next_i);
 	    }
 	}
+	/* process packets sent to the opposite queue */
 	if (peer->cur_txq > 0)
 		netmap_fwd(peer);
-	if (port->cur_txq > 0)		// WANT_RUN
+	if (port->cur_txq > 0) {		// WANT_RUN
+		/* any traffic in this direction ? */
 		netmap_fwd(port);
+	}
 	ND("done");
 	return 0;
 }
