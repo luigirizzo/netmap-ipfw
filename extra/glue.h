@@ -94,6 +94,21 @@ static inline const char *xyz(const char *s) {
 #define D(fmt, ...) fprintf(stderr, "%s:%-10s [%d] " fmt "\n",      	\
         	xyz(__FILE__), __FUNCTION__, __LINE__,  ## __VA_ARGS__)
 
+/* Rate limited version of "D", lps indicates how many per second */
+#define RD(lps, format, ...)                                    \
+    do {                                                        \
+        static int t0, __cnt;                                   \
+        struct timeval __xxts;                                  \
+        gettimeofday(&__xxts, NULL);                            \
+        if (t0 != __xxts.tv_sec) {                              \
+            t0 = __xxts.tv_sec;                                 \
+            __cnt = 0;                                          \
+        }                                                       \
+        if (__cnt++ < lps) {                                    \
+            D(format, ##__VA_ARGS__);                           \
+        }                                                       \
+    } while (0)
+
 #define DX(lev, fmt, ...) do {              \
         if (dn_cfg.debug > lev) D(fmt, ## __VA_ARGS__); } while (0)
 /* end debugging macros */
