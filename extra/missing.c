@@ -39,8 +39,8 @@
  * Global bariables in the kernel
  */
 int ticks;		/* kernel ticks counter */
-int hz = 1000;		/* default clock time */
-long tick = 1000;	/* XXX is this 100000/hz ? */
+int hz = 5000;		/* default clock time */
+long tick = 0;	/* XXX is this 100000/hz ? */
 int bootverbose = 0;
 time_t time_uptime = 0;
 struct timeval boottime;
@@ -720,5 +720,7 @@ extern int mainloop(int argc, char *argv[]);
 int
 main(int argc, char *argv[])
 {
+	tick = 1000000/hz;
+	D("initializing tick to %ld", tick);
 	return mainloop(argc, argv);
 }
