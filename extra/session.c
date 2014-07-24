@@ -555,9 +555,10 @@ mainloop(int argc, char *argv[])
 	const char *s, *addr = LOCALADDR;
 	int port = IPFW_PORT;
 	int i;
+	int old_ticks;
 
 	gettimeofday(&t0, NULL);
-	ticks = 0;
+	old_ticks = ticks = 0;
 	callout_startup();
 
 	ipfw_module_init();
@@ -592,7 +593,7 @@ mainloop(int argc, char *argv[])
 #endif
 
 	for (;;) {
-		struct timeval now, delta = { 0, 1000000/hz} ;
+		struct timeval now, delta = { 0, tick} ;
 		int n;
 		fd_set r, w;
 
@@ -603,7 +604,14 @@ mainloop(int argc, char *argv[])
 		timersub(&now, &t0, &delta);
 		/* compute absolute ticks. */
 		ticks = (delta.tv_sec * hz) + (delta.tv_usec * hz) / 1000000;
-		callout_run();
+		if (old_ticks != ticks) {
+			callout_run();
+			old_ticks = ticks;
+		} else {
+			static int skipped = 0;
+			skipped++;
+			RD(1, "skipped %d", skipped);
+		}
 	}
 	ipfw_destroy();
 	return 0;
