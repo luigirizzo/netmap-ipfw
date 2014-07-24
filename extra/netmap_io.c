@@ -157,7 +157,7 @@ again:
 			ioctl(port->d->fd, NIOCTXSYNC);
 			goto again;
 		}
-		ND("%d buffers leftover", n - i);
+		RD(1, "%d buffers leftover", n - i);
 		for (;i < n; i++) {
 			if (x[i].flags == TXQ_IS_MBUF) {
 				FREE_PKT(x[i].ring_or_mbuf);
@@ -179,7 +179,7 @@ netmap_enqueue(struct mbuf *m, int proto)
 		D("error missing peer in %p", m);
 		FREE_PKT(m);
 	}
-	ND("start with %d packets", peer->cur_txq);
+	ND(1, "start with %d packets", peer->cur_txq);
 	if (peer->cur_txq >= MY_TXQ_LEN)
 		netmap_fwd(peer);
 	x = peer->q + peer->cur_txq;
@@ -226,12 +226,12 @@ netmap_read(struct sess *sess, void *arg)
 		    continue;
 	    __builtin_prefetch(&ring->slot[ring->cur]);
 	    while (!nm_ring_empty(ring)) {
-		u_int dst, src, idx, len;
+		u_int src, idx, len;
 		struct netmap_slot *slot;
 		void *buf;
 
-		dst = peer->cur_txq;
-		if (dst >= MY_TXQ_LEN) {
+		/* make sure we have room before looking at the input */
+		if (peer->cur_txq >= MY_TXQ_LEN) {
 			netmap_fwd(peer);
 			continue;
 		}
@@ -273,6 +273,7 @@ netmap_read(struct sess *sess, void *arg)
 			 * XXX TODO remember to clean up any tags that
 			 * ipfw may have allocated
 			 */
+			u_int dst = peer->cur_txq;
 			x[dst].ring_or_mbuf = ring;
 			x[dst].slot_idx = src;
 			x[dst].flags = TXQ_IS_SLOT;
