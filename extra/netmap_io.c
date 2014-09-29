@@ -62,6 +62,9 @@ struct my_netmap_port {
 	struct nm_desc 	*d;
 	struct my_netmap_port *peer;	/* peer port */
 	struct sess	*sess;		/* my session */
+
+	u_int		allocator_id;	/* from nmreq.nr_arg2 */
+	u_int		can_swap_bufs;	/* compute when peer is known, same allocator_id */
 	u_int		cur_txq;	/* next txq slot to use for tx */
 	struct txq_entry q[MY_TXQ_LEN];	/* slots are in the peer */
 	/* followed by ifname */
@@ -114,28 +117,25 @@ again:
 
 			dst = &ring->slot[ring->cur];
 			if (x[i].flags == TXQ_IS_SLOT) {
-#if 0 // old code zero copy through interfaces
-				src = x[i].slot;
-				// XXX swap buffers
-				D("pkt %d len %d", i, src->len);
-				dst->len = src->len;
-				u_int tmp;
-				dst->flags = src->flags = NS_BUF_CHANGED;
-				tmp = dst->buf_idx;
-				dst->buf_idx = src->buf_idx;
-				src->buf_idx = tmp;
-#else // new code for virtual port, do a copy
 				struct netmap_ring *sr = x[i].ring_or_mbuf;
 
 				src = &sr->slot[x[i].slot_idx];
 				dst->len = src->len;
-				dst->ptr = (uintptr_t)NETMAP_BUF(sr, src->buf_idx);
-				dst->flags = NS_INDIRECT;
-				if (0) nm_pkt_copy(
-					NETMAP_BUF(sr, src->buf_idx), // XXX wrong ring
-					NETMAP_BUF(ring, dst->buf_idx),
-					dst->len);
-#endif
+
+				if (port->can_swap_bufs) {
+					ND("pkt %d len %d", i, src->len);
+					u_int tmp = dst->buf_idx;
+					dst->flags = src->flags = NS_BUF_CHANGED;
+					dst->buf_idx = src->buf_idx;
+					src->buf_idx = tmp;
+				} else if (port->peer->allocator_id == 1) { // no indirect
+					nm_pkt_copy(NETMAP_BUF(sr, src->buf_idx),
+						NETMAP_BUF(ring, dst->buf_idx),
+						dst->len);
+				} else {
+					dst->ptr = (uintptr_t)NETMAP_BUF(sr, src->buf_idx);
+					dst->flags = NS_INDIRECT;
+				}
 			} else if (x[i].flags == TXQ_IS_MBUF) {
 				struct mbuf *m = (void *)x[i].ring_or_mbuf;
 
@@ -319,6 +319,8 @@ netmap_add_port(const char *dev)
                 kern_free(port);	// XXX compat
                 return;
         }
+	port->allocator_id = port->d->req.nr_arg2;
+	D("--- mem_id %d", port->allocator_id);
         s2 = new_session(port->d->fd, netmap_read, port, WANT_READ);
 	port->sess = s2;
         D("create sess %p my_netmap_port %p", s2, port);
@@ -328,9 +330,13 @@ netmap_add_port(const char *dev)
                 struct my_netmap_port *peer = s1->arg;
                 port->peer = peer;
                 peer->peer = port;
-                D("%p %s <-> %p %s",
-                        port, port->d->req.nr_name,
-                        peer, peer->d->req.nr_name);
+
+		port->can_swap_bufs = peer->can_swap_bufs =
+			(port->allocator_id == peer->allocator_id);
+                D("%p %s %d <-> %p %s %d %s",
+                        port, port->d->req.nr_name, port->allocator_id,
+                        peer, peer->d->req.nr_name, peer->allocator_id,
+			port->can_swap_bufs ? "SWAP" : "COPY");
                 s1 = NULL;
         }
 }
