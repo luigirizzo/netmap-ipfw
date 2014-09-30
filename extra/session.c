@@ -25,6 +25,7 @@ extern int errno;
 
 #include <stdio.h>
 #include <pthread.h>
+#include <fcntl.h>
 #include <sys/time.h>	/* timersub */
 #include <stdlib.h>
 #include <string.h>
@@ -421,6 +422,8 @@ sockopt_handler(struct sess *sess, void *arg)
 done:
 	ND("closing session");
 	if (d) {
+		if (sess->fd >= 0)
+			close(sess->fd);
 		if (d->rd)
 			free(d->rd);
 		if (d->wr)
@@ -483,6 +486,7 @@ listener(struct sess *sess, void *arg)
 	fd = accept(sess->fd, NULL, NULL);
 	if (fd < 0)
 		return -1;
+	fcntl(fd, F_SETFL, O_NONBLOCK);
 	new_session(fd, sess->arg ? sockopt_handler: packet_handler,
 		sess->arg, WANT_READ);
 	sess->flags = WANT_READ;
