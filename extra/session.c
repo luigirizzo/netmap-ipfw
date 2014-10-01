@@ -560,6 +560,7 @@ mainloop(int argc, char *argv[])
 	int port = IPFW_PORT;
 	int i;
 	int old_ticks;
+	uint64_t callouts = 0, skipped = 0;
 
 	gettimeofday(&t0, NULL);
 	old_ticks = ticks = 0;
@@ -609,13 +610,13 @@ mainloop(int argc, char *argv[])
 		/* compute absolute ticks. */
 		ticks = (delta.tv_sec * hz) + (delta.tv_usec * hz) / 1000000;
 		if (old_ticks != ticks) {
+			callouts++;
 			callout_run();
 			old_ticks = ticks;
 		} else {
-			static int skipped = 0;
 			skipped++;
-			RD(1, "skipped %d", skipped);
 		}
+		RD(1, "callouts %lu skipped %lu", callouts, skipped);
 	}
 	ipfw_destroy();
 	return 0;
