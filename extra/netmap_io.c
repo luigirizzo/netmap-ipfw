@@ -319,6 +319,7 @@ netmap_add_port(const char *dev)
                 kern_free(port);	// XXX compat
                 return;
         }
+	strncpy(port->ifp.if_xname, dev, IFNAMSIZ-1);
 	port->allocator_id = port->d->req.nr_arg2;
 	D("--- mem_id %d", port->allocator_id);
         s2 = new_session(port->d->fd, netmap_read, port, WANT_READ);
