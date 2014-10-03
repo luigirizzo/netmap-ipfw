@@ -207,7 +207,7 @@ int
 netmap_read(struct sess *sess, void *arg)
 {
 	struct my_netmap_port *port = arg;
-	u_int si;
+	u_int si, hdrlen;
 	struct mbuf dm, dm0;
 	struct ip_fw_args args;
 	struct my_netmap_port *peer = port->peer;
@@ -262,8 +262,10 @@ netmap_read(struct sess *sess, void *arg)
 
 	/* XXX can we use check_frame ? */
 		dm.m_pkthdr.rcvif = &port->ifp;
-		dm.m_data = buf + 14;	// skip mac
-		dm.m_len = dm.m_pkthdr.len = len - 14;
+		hdrlen = ((uint16_t *)buf)[6] == htons(0x8100) ? 18 : 14;
+		ND(1, "hdrlen %d", hdrlen);
+		dm.m_data = buf + hdrlen;	// skip mac + vlan hdr if any
+		dm.m_len = dm.m_pkthdr.len = len - hdrlen;
 		ND("slot %d len %d", i, dm.m_len);
 		// XXX ipfw_chk is slightly faster
 		//ret = ipfw_chk(&args);
