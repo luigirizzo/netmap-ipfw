@@ -11,7 +11,9 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <sys/cpuset.h> // freebsd
+#ifdef __FreeBSD__
+#include <sys/cpuset.h> // freebsd, used in rmlock
+#endif
 #include <net/pfil.h>	// PFIL_IN
 #include <sys/errno.h>
 extern int errno;
