@@ -17,7 +17,7 @@
  *
  * Command line interface for IP firewall facility
  *
- * $FreeBSD: head/sbin/ipfw/main.c 229778 2012-01-07 16:09:33Z uqs $
+ * $FreeBSD: head/sbin/ipfw/main.c 272840 2014-10-09 19:32:35Z melifaro $
  */
 
 #include <sys/wait.h>
@@ -436,6 +436,10 @@ ipfw_main(int oldac, char **oldav)
 			ipfw_list(ac, av, do_acct);
 		else if (_substrcmp(*av, "show") == 0)
 			ipfw_list(ac, av, 1 /* show counters */);
+		else if (_substrcmp(*av, "table") == 0)
+			ipfw_table_handler(ac, av);
+		else if (_substrcmp(*av, "internal") == 0)
+			ipfw_internal_handler(ac, av);
 		else
 			errx(EX_USAGE, "bad command `%s'", *av);
 	}

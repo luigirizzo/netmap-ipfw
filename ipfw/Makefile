@@ -11,7 +11,7 @@ include ../Makefile.inc
 VPATH = .:../extra
 CFLAGS += -include ../extra/glue.h
 CFLAGS += -O2 -Wall -Werror
-OBJS = ipfw2.o dummynet.o main.o ipv6.o altq.o
+OBJS = ipfw2.o dummynet.o main.o ipv6.o altq.o tables.o
 
 LDFLAGS=
 LDFLAGS += -lutil # expand_number and humanize_number
@@ -20,13 +20,13 @@ CFLAGS += $(INCDIRS)
 CFLAGS += -DUSERSPACE	# communicate through userspace
 ifeq ($(OSARCH),Linux)	# XXX untested
     CFLAGS += -D__BSD_VISIBLE
-    CFLAGS += -DNEED_STRTONUM -DNEED_SYSCTLBYNAME
+    CFLAGS += -DNEED_STRTONUM -DNEED_SYSCTLBYNAME -DNEED_ROUNDUP2
     CFLAGS += -Wno-unused-but-set-variable
     OBJS += expand_number.o humanize_number.o
 endif
 ifeq ($(OSARCH),Darwin)
     CFLAGS += -D__BSD_VISIBLE
-    CFLAGS += -DNEED_STRTONUM
+    CFLAGS += -DNEED_STRTONUM -DNEED_ROUNDUP2
     OBJS += expand_number.o humanize_number.o
 endif
 
