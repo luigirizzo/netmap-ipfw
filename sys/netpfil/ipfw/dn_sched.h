@@ -27,7 +27,7 @@
 /*
  * The API to write a packet scheduling algorithm for dummynet.
  *
- * $FreeBSD: head/sys/netpfil/ipfw/dn_sched.h 213267 2010-09-29 09:40:20Z luigi $
+ * $FreeBSD: head/sys/netpfil/ipfw/dn_sched.h 258467 2013-11-22 05:02:37Z luigi $
  */
 
 #ifndef _DN_SCHED_H

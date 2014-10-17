@@ -26,7 +26,7 @@
  */
 
 #include <sys/cdefs.h>
-__FBSDID("$FreeBSD: head/sys/netpfil/ipfw/ip_dummynet.c 240494 2012-09-14 11:51:49Z glebius $");
+__FBSDID("$FreeBSD: head/sys/netpfil/ipfw/ip_dummynet.c 272840 2014-10-09 19:32:35Z melifaro $");
 
 /*
  * Configuration and internal object management for dummynet.
@@ -1069,7 +1069,10 @@ config_red(struct dn_fsk *fs)
 	fs->min_th = SCALE(fs->fs.min_th);
 	fs->max_th = SCALE(fs->fs.max_th);
 
-	fs->c_1 = fs->max_p / (fs->fs.max_th - fs->fs.min_th);
+	if (fs->fs.max_th == fs->fs.min_th)
+		fs->c_1 = fs->max_p;
+	else
+		fs->c_1 = SCALE((int64_t)(fs->max_p)) / (fs->fs.max_th - fs->fs.min_th);
 	fs->c_2 = SCALE_MUL(fs->c_1, SCALE(fs->fs.min_th));
 
 	if (fs->fs.flags & DN_IS_GENTLE_RED) {
@@ -2289,7 +2292,7 @@ static moduledata_t dummynet_mod = {
 #define	DN_SI_SUB	SI_SUB_PROTO_IFATTACHDOMAIN
 #define	DN_MODEV_ORD	(SI_ORDER_ANY - 128) /* after ipfw */
 DECLARE_MODULE(dummynet, dummynet_mod, DN_SI_SUB, DN_MODEV_ORD);
-MODULE_DEPEND(dummynet, ipfw, 2, 2, 2);
+MODULE_DEPEND(dummynet, ipfw, 3, 3, 3);
 MODULE_VERSION(dummynet, 3);
 
 /*

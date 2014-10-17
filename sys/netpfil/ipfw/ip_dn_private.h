@@ -27,7 +27,7 @@
 /*
  * internal dummynet APIs.
  *
- * $FreeBSD: head/sys/netpfil/ipfw/ip_dn_private.h 213253 2010-09-28 22:46:13Z luigi $
+ * $FreeBSD: head/sys/netpfil/ipfw/ip_dn_private.h 258467 2013-11-22 05:02:37Z luigi $
  */
 
 #ifndef _IP_DN_PRIVATE_H

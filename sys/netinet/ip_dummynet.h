@@ -24,7 +24,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * $FreeBSD: head/sys/netinet/ip_dummynet.h 239124 2012-08-07 07:52:25Z luigi $
+ * $FreeBSD: head/sys/netinet/ip_dummynet.h 266941 2014-06-01 07:28:24Z hiren $
  */
 
 #ifndef _IP_DUMMYNET_H
@@ -104,6 +104,7 @@ enum {	/* user flags */
 	DN_HAS_PROFILE	= 0x0010,	/* a link has a profile */
 	DN_IS_RED	= 0x0020,
 	DN_IS_GENTLE_RED= 0x0040,
+	DN_IS_ECN	= 0x0080,
 	DN_PIPE_CMD	= 0x1000,	/* pipe config... */
 };
 
