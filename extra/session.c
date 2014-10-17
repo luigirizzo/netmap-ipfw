@@ -468,7 +468,7 @@ packet_handler(struct sess *sess, void *arg)
 	struct mbuf *m = &dm;
 	ND("sess %p arg %p", sess, arg);
 	for (i = 0; i < 1000; i++)
-		ipfw_check_frame(NULL, &m, ifp, PFIL_IN, inp);
+		ipfw_check_packet(NULL, &m, ifp, PFIL_IN, inp);
 #endif
 	}
 	return 0;
