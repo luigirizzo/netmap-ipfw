@@ -15,7 +15,7 @@ OBJPATH = $(M)/../$(OBJDIR)
 ifeq ($(OSARCH),Darwin)
 	CFLAGS2 += -D__BSD_VISIBLE
 	EFILES_.	+= libutil.h
-	EFILES_sys	+= condvar.h priv.h _lock.h rmlock.h
+	EFILES_sys	+= condvar.h priv.h _lock.h rmlock.h cpuset.h
 	EFILES_machine	+= in_cksum.h
 	EFILES_netinet	+= ip_carp.h pim.h sctp.h
 	EFILES_net	+= netisr.h vnet.h
@@ -26,7 +26,7 @@ ifeq ($(OSARCH),Linux)
 	CFLAGS2		+= -include ../extra/linux_defs.h
 	CFLAGS2		+= -Wno-unused-but-set-variable
 	EFILES_.	+= libutil.h
-	EFILES_sys	+= condvar.h priv.h _lock.h rmlock.h
+	EFILES_sys	+= condvar.h priv.h _lock.h rmlock.h cpuset.h
 	EFILES_sys	+= lock.h ucred.h # taskqueue.h
 	EFILES_sys	+= sockio.h
 	EFILES_sys	+= cpuset.h
