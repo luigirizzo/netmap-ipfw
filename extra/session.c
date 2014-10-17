@@ -183,8 +183,7 @@ merge_sessions(void)
 			all_sessions = cur->next;
 		memset(cur, 0, sizeof(*cur));
 		free(cur);
-		if (prev == NULL)
-			cur = NULL;
+		cur = prev;
 	}
 	if (prev)
 		prev->next = new_sessions;
