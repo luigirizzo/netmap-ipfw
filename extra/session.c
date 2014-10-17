@@ -490,7 +490,6 @@ listener(struct sess *sess, void *arg)
 	fcntl(fd, F_SETFL, O_NONBLOCK);
 	new_session(fd, sess->arg ? sockopt_handler: packet_handler,
 		sess->arg, WANT_READ);
-	sess->flags = WANT_READ;
 	return 0;
 }
 
