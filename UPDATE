@@ -32,3 +32,13 @@ ip_fw_pfil.c			XXX small change
 ip_fw_private.h			XXX large
 ip_fw_sockopt.c			XXX huge
 ip_fw_table.c			XXX huge
+
+Userspace:
+altq.c				$FreeBSD$, bprintf
+dummynet.c			$FreeBSD$, ecn, bprintf
+ipfw2.c				$FreeBSD$, commands
+ipfw2.h				as above
+ipv6.c				as above
+main.c				small changes
+nat.c				internal
+
