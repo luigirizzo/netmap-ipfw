@@ -995,13 +995,25 @@ ipfw_ctl(struct sockopt *sopt)
 		 * change between calculating the size and returning the
 		 * data in which case we'll just return what fits.
 		 */
+		/* XXX this keeps retrying until size >= want */
 		for (;;) {
 			int len = 0, want;
+			size_t avail = sopt->sopt_valsize; 
 
 			size = chain->static_len;
 			size += ipfw_dyn_len();
-			if (size >= sopt->sopt_valsize)
+			if (avail <= size) {
+				/* no space from user but try to report our needs
+				 * in the first field of the rule, and restore
+				 * sopt->sopt_valsize
+				 */
+				if (avail >= sizeof(void *)) {
+					void *p = (void *)(uintptr_t)size;
+					sooptcopyout(sopt, &p, sizeof(p));
+					sopt->sopt_valsize = avail;
+				}
 				break;
+			}
 			buf = malloc(size, M_TEMP, M_WAITOK);
 			IPFW_UH_RLOCK(chain);
 			/* check again how much space we need */

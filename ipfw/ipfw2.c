@@ -1860,6 +1860,7 @@ ipfw_sets_handler(char *av[])
 		char const *msg;
 		int nalloc;
 
+		/* XXX we don't need to retry, first one should be ok */
 		nalloc = nbytes = sizeof(struct ip_fw);
 		while (nbytes >= nalloc) {
 			if (data)
@@ -2027,8 +2028,14 @@ ipfw_list(int ac, char *av[], int show_counters)
 		nbytes = nalloc;
 		data = safe_realloc(data, nbytes);
 		if (do_cmd(ocmd, data, (uintptr_t)&nbytes) < 0)
-			err(EX_OSERR, "getsockopt(IP_%s_GET)",
-				co.do_pipe ? "DUMMYNET" : "FW");
+			err(EX_OSERR, "getsockopt(IP_FW_GET)");
+		r = data;
+		seen = (uintptr_t)r->x_next;
+		fprintf(stderr, "nalloc %d nbytes %d ptr %p\n",
+			nalloc, nbytes, r->x_next);
+		if (seen > 0 && seen > nbytes)
+			nbytes = nalloc = seen/2;
+		
 	}
 
 	/*
