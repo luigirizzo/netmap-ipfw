@@ -616,7 +616,7 @@ mainloop(int argc, char *argv[])
 		} else {
 			skipped++;
 		}
-		RD(1, "callouts %lu skipped %lu", callouts, skipped);
+		RD(1, "callouts %lu skipped %lu", (u_long)callouts, (u_long)skipped);
 	}
 	ipfw_destroy();
 	return 0;
