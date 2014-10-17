@@ -173,6 +173,12 @@ struct ether_addr * ether_aton(const char *a);
 
 // #define __unused // conflicts with linux/sysctl.h
 #endif // NEED_SYSCTLBYNAME
+
+#ifdef NEED_ROUNDUP2 /* in freensd is in sys/param.h */
+/* round up to the next power of 2 (y) */
+#define roundup2(x, y)  (((x)+((y)-1))&(~((y)-1))) /* if y is powers of two */
+#endif // NEED_ROUNDUP2
+
 /* possibly redundant, does not harm */
 size_t strlcpy(char * dst, const char * src, size_t siz);
 
