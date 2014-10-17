@@ -252,7 +252,9 @@ m_tag_find(struct mbuf *m, int type, struct m_tag *start)
 
 /* macro used to create a new mbuf */
 #define MT_DATA         1       /* dynamic (data) allocation */
+#ifndef MSIZE // defined on osx
 #define MSIZE           256     /* size of an mbuf */
+#endif
 #define MGETHDR(_m, _how, _type)   ((_m) = m_gethdr((_how), (_type)))
 #define MY_MCLBYTES	2048	/* XXX make slightly less */
 
