@@ -312,6 +312,16 @@ void reinject_drop(struct mbuf* m);
 #define IPTOS_DSCP_CS6          0xc0
 #define IPTOS_DSCP_CS7          0xe0
 
+/*
+ * ECN (Explicit Congestion Notification) codepoints in RFC3168 mapped to the
+ * lower 2 bits of the TOS field.
+ */
+#define IPTOS_ECN_NOTECT        0x00    /* not-ECT */
+#define IPTOS_ECN_ECT1          0x01    /* ECN-capable transport (1) */
+#define IPTOS_ECN_ECT0          0x02    /* ECN-capable transport (0) */
+#define IPTOS_ECN_CE            0x03    /* congestion experienced */
+#define IPTOS_ECN_MASK          0x03    /* ECN field mask */
+
 /*------------------------- */
 
 #define RTF_CLONING	0x100		/* generate new routes on use */
