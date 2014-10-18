@@ -17,7 +17,7 @@
  *
  * NEW command line interface for IP firewall facility
  *
- * $FreeBSD: head/sbin/ipfw/ipfw2.c 273033 2014-10-13 12:49:04Z melifaro $
+ * $FreeBSD: head/sbin/ipfw/ipfw2.c 273253 2014-10-18 15:18:31Z melifaro $
  */
 
 #include <sys/types.h>
@@ -2530,7 +2530,7 @@ ipfw_show_config(struct cmdline_opts *co, struct format_opts *fo,
 	int lac;
 	char **lav;
 	char *endptr;
-	size_t read;	// XXX bad name
+	size_t readsz;
 	struct buf_pr bp;
 	ipfw_obj_ctlv *ctlv, *tstate;
 	ipfw_obj_tlv *rbase;
@@ -2542,7 +2542,7 @@ ipfw_show_config(struct cmdline_opts *co, struct format_opts *fo,
 	rbase = NULL;
 	dynbase = NULL;
 	dynsz = 0;
-	read = sizeof(*cfg);
+	readsz = sizeof(*cfg);
 	rcnt = 0;
 
 	fo->set_mask = cfg->set_mask;
@@ -2553,7 +2553,7 @@ ipfw_show_config(struct cmdline_opts *co, struct format_opts *fo,
 		/* We've requested static rules */
 		if (ctlv->head.type == IPFW_TLV_TBLNAME_LIST) {
 			fo->tstate = ctlv;
-			read += ctlv->head.length;
+			readsz += ctlv->head.length;
 			ctlv = (ipfw_obj_ctlv *)((caddr_t)ctlv +
 			    ctlv->head.length);
 		}
@@ -2561,15 +2561,15 @@ ipfw_show_config(struct cmdline_opts *co, struct format_opts *fo,
 		if (ctlv->head.type == IPFW_TLV_RULE_LIST) {
 			rbase = (ipfw_obj_tlv *)(ctlv + 1);
 			rcnt = ctlv->count;
-			read += ctlv->head.length;
+			readsz += ctlv->head.length;
 			ctlv = (ipfw_obj_ctlv *)((caddr_t)ctlv +
 			    ctlv->head.length);
 		}
 	}
 
-	if ((cfg->flags & IPFW_CFG_GET_STATES) && (read != sz))  {
+	if ((cfg->flags & IPFW_CFG_GET_STATES) && (readsz != sz))  {
 		/* We may have some dynamic states */
-		dynsz = sz - read;
+		dynsz = sz - readsz;
 		/* Skip empty header */
 		if (dynsz != sizeof(ipfw_obj_ctlv))
 			dynbase = (caddr_t)ctlv;
@@ -4686,9 +4686,8 @@ ipfw_add(char *av[])
 	ipfw_obj_ctlv *ctlv, *tstate;
 
 	rbufsize = sizeof(rulebuf);
+	memset(rulebuf, 0, rbufsize);
 	memset(&ts, 0, sizeof(ts));
-
-memset(&rulebuf, 0, rbufsize); // XXX
 
 	/* Optimize case with no tables */
 	default_off = sizeof(ipfw_obj_ctlv) + sizeof(ip_fw3_opheader);
