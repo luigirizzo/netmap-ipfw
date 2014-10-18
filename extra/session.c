@@ -116,7 +116,7 @@ sooptcopyout(struct sockopt *sopt, const void *buf, size_t len)
 {
 	size_t valsize = sopt->sopt_valsize;
 
-	ND("data len %d sopt_len %d", len, valsize);
+	ND("data len %d sopt_len %d", (int)len, (int)valsize);
 	if (len < valsize)
 		sopt->sopt_valsize = valsize = len;
 	bcopy(buf, sopt->sopt_val, valsize);
@@ -131,7 +131,7 @@ sooptcopyin(struct sockopt *sopt, void *buf, size_t len, size_t minlen)
 {
 	size_t valsize = sopt->sopt_valsize;
 
-	ND("have %d len %d minlen %d", valsize, len, minlen);
+	ND("have %d len %d minlen %d", (int)valsize, (int)len, (int)minlen);
 	if (valsize < minlen)
 		return EINVAL;
 	if (valsize > len)
@@ -587,7 +587,7 @@ mainloop(int argc, char *argv[])
 	}
 #endif /* WITH_NETMAP */
 
-#if 0 // test code: a telnet on 5556 becomes an infinite source
+#if 1 // test code: a telnet on 5556 becomes an infinite source
 	{
 		int net_fd = do_server(addr, port+1);
 		if (net_fd >= 0)
