@@ -130,11 +130,9 @@ struct mtx {
 struct rwlock {
 	pthread_mutex_t p0;
 };
-#ifndef __FreeBSD__
 struct rmlock {
 	pthread_mutex_t p0;
 };
-#endif
 extern pthread_mutex_t dummynet_mtx_p;
 extern pthread_mutex_t ipfw_dyn_mtx_p;
 extern pthread_mutex_t pfil_global_lock_p;
