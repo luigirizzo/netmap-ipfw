@@ -4938,7 +4938,7 @@ ifinfo_cmp(const void *a, const void *b)
 static void
 ipfw_list_tifaces()
 {
-	ipfw_obj_lheader *olh;
+	ipfw_obj_lheader *olh = NULL;
 	ipfw_iface_info *info;
 	int i, error;
 

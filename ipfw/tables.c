@@ -797,7 +797,7 @@ table_show_info(ipfw_xtable_info *i, void *arg)
 static int
 table_show_one(ipfw_xtable_info *i, void *arg)
 {
-	ipfw_obj_header *oh;
+	ipfw_obj_header *oh = NULL; // XXX uninitialized
 	int error;
 
 	if ((error = table_do_get_list(i, &oh)) != 0) {
@@ -1125,6 +1125,7 @@ tentry_fill_key_type(char *arg, ipfw_obj_tentry *tentry, uint8_t type,
 	struct servent *sent;
 	int masklen;
 
+	mask = 0; // XXX uninitialized ?
 	masklen = 0;
 	af = 0;
 	paddr = (struct in6_addr *)&tentry->k;
