@@ -2635,7 +2635,7 @@ find_table_algo(struct tables_config *tcfg, struct tid_info *ti, char *name)
  */
 int
 ipfw_add_table_algo(struct ip_fw_chain *ch, struct table_algo *ta, size_t size,
-    int *idx)
+    uint32_t *idx)
 {
 	struct tables_config *tcfg;
 	struct table_algo *ta_new;
