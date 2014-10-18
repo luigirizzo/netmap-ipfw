@@ -370,7 +370,6 @@ static inline unsigned long __fls(unsigned long word)
 typedef uint64_t *counter_u64_t; // XXX kernel
 static inline void counter_u64_add(counter_u64_t c, int64_t v)
 {
-	D("counter %p add %d", c, (int)v);
 	*c += v;
 }
 static inline void counter_u64_zero(counter_u64_t c)
