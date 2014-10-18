@@ -392,7 +392,7 @@ writen(int fd, const char *buf, int len)
 
 	for (; len > 0; buf += i, len -= i) {
 		i = write(fd, buf, len);
-		D("have %d wrote %d", len, i);
+		ND("have %d wrote %d", len, i);
 		if (i < 0) {
 			if (errno == EAGAIN)
 				continue;
@@ -410,14 +410,14 @@ readn(int fd, char *buf, int len)
 
 	for (pos = 0; pos < len; pos += i) {
 		i = read(fd, buf + pos, len - pos);
-		D("have %d want %d got %d", pos, len, i);
+		ND("have %d want %d got %d", pos, len, i);
 		if (i < 0) {
 			if (errno == EAGAIN)
 				continue;
 			return -1;
 		}
 	}
-	D("full read got %d", pos);
+	ND("full read got %d", pos);
 	return 0;
 }
 
@@ -428,7 +428,7 @@ __sockopt2(int s, int level, int optname, void *optval, socklen_t *optlen,
 	struct wire_hdr r;
 	int len = optlen && optval ? *optlen : 0;
 
-	D("dir %d optlen %d level %d optname %d", dir, len, level, optname);
+	ND("dir %d optlen %d level %d optname %d", dir, len, level, optname);
 	/* send request to the server */
 	r.optlen = htonl(len);
 	r.level = htonl(level);
@@ -451,7 +451,7 @@ __sockopt2(int s, int level, int optname, void *optval, socklen_t *optlen,
 	if (readn(s, (char *)&r, sizeof(r)))
 		return -1;	/* error reading */
 	len = ntohl(r.optlen);
-	D("got header, datalen %d", len);
+	ND("got header, datalen %d", len);
 	if (len > 0) {
 		if (readn(s, optval, len)) {
 			return -1;	/* error reading */
