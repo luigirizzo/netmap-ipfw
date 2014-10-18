@@ -2525,12 +2525,12 @@ ipfw_show_config(struct cmdline_opts *co, struct format_opts *fo,
 {
 	caddr_t dynbase;
 	size_t dynsz;
-	int rcnt = 0; // XXX silence warning
+	int rcnt;
 	int exitval = EX_OK;
 	int lac;
 	char **lav;
 	char *endptr;
-	size_t read;
+	size_t read;	// XXX bad name
 	struct buf_pr bp;
 	ipfw_obj_ctlv *ctlv, *tstate;
 	ipfw_obj_tlv *rbase;
@@ -2543,6 +2543,7 @@ ipfw_show_config(struct cmdline_opts *co, struct format_opts *fo,
 	dynbase = NULL;
 	dynsz = 0;
 	read = sizeof(*cfg);
+	rcnt = 0;
 
 	fo->set_mask = cfg->set_mask;
 
