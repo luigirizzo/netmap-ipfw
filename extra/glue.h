@@ -47,6 +47,8 @@
 
 #include <stdint.h>	/* linux needs it in addition to sys/types.h */
 #include <sys/types.h>	/* for size_t */
+
+#define true 1		/* stdbool */
 #ifdef _KERNEL		/* prevent a warning */
 #undef _KERNEL
 #include <sys/ioctl.h>
@@ -56,10 +58,56 @@
 #else
 #include <sys/ioctl.h>
 #endif
+
 #include <time.h>
 #ifndef USERSPACE
 #include <netinet/ether.h>
 #endif
+
+#ifdef KERNEL_SIDE
+/* sys/counter.h , to be moved to a file */
+typedef uint64_t *counter_u64_t; // XXX kernel
+static inline void counter_u64_add(counter_u64_t c, int64_t v)
+{
+	*c += v;
+}
+static inline void counter_u64_zero(counter_u64_t c)
+{
+	*c = 0;
+}
+static inline uint64_t counter_u64_fetch(counter_u64_t c)
+{
+	return *c;
+}
+
+struct rm_priotracker {
+};
+
+#define vslock(_a, _b)	(0)
+#define vsunlock(_a, _b)
+
+typedef uint64_t	u_register_t; // XXX not on osx ?
+
+typedef uintptr_t eventhandler_tag;
+#define EVENTHANDLER_REGISTER(_a, _b, ...)	(uintptr_t)_b;
+#define EVENTHANDLER_DEREGISTER(_a, _b, ...)	(uintptr_t)_b;
+
+// XXX this needs to be completed
+#define if_name(_ifp)	(_ifp->if_xname)
+#define ifunit_ref(_n)	NULL	// XXX
+#define if_rele(_n)
+
+#define rtalloc1_fib(_a, ...)	NULL
+#define rt_key(_a)	NULL
+#define rt_mask(_a)	NULL
+#define RTFREE_LOCKED(_a)	NULL
+struct rtentry {
+};
+#define rt_tables_get_rnh(_a, _b)	NULL
+
+#endif /* KERNEL_SIDE */
+
+/*----- */
 
 /* ipfw2.c - from timeconv.h */
 static __inline time_t

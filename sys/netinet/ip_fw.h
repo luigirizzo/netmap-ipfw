@@ -596,7 +596,7 @@ struct ip_fw_bcounter {
 };
 
 
-#if 1 // XXX ndef	_KERNEL
+#ifndef	_KERNEL
 /*
  * Legacy rule format
  */

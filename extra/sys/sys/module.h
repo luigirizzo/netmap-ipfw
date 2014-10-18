@@ -37,5 +37,7 @@ typedef struct moduledata {
 #define MODULE_VERSION(a,b)
 #endif
 
+#define FEATURE(a, b)
+
 #endif  /* _SYS_MODULE_H_ */
 

@@ -77,6 +77,7 @@ SRCS_IPFW	 = ip_fw2.c ip_fw_pfil.c ip_fw_sockopt.c
 SRCS_IPFW	+= ip_fw_dynamic.c ip_fw_table.c
 SRCS_IPFW	+= ip_fw_log.c
 SRCS_IPFW	+= ip_dummynet.c ip_dn_io.c ip_dn_glue.c
+SRCS_IPFW	+= ip_fw_iface.c ip_fw_table.c ip_fw_table_algo.c ip_fw_table_value.c
 SRCS_IPFW	+= dn_heap.c
 SRCS_IPFW	+= dn_sched_fifo.c dn_sched_wf2q.c
 SRCS_IPFW	+= dn_sched_rr.c dn_sched_qfq.c
@@ -90,7 +91,7 @@ IPFW_SRCS += ipfw2_mod.c # bsd_compat.c
 IPFW_SRCS += missing.c session.c netmap_io.c
 IPFW_CFLAGS= -DINET
 
-E_CFLAGS += -Dradix
+E_CFLAGS += -Dradix -DNEED_ROUNDUP2
 MOD := kipfw
 
 LIBS= -lpthread
@@ -117,6 +118,7 @@ EFILES_sys	+= proc.h sockopt.h sysctl.h
 EFILES_sys	+= mutex.h _mutex.h _rwlock.h rwlock.h
 EFILES_sys	+= eventhandler.h
 EFILES_sys	+= jail.h ktr.h
+EFILES_sys	+= counter.h
 
 #EFILES += sys/_lock.h sys/_rwlock.h sys/rwlock.h sys/rmlock.h sys/_mutex.h sys/mutex.h
 #EFILES += sys/condvar.h sys/eventhandler.h # sys/domain.h

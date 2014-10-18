@@ -56,6 +56,7 @@ void panic(const char *fmt, ...);
 #include <stdio.h>	// printf
 #include <sys/socket.h>	// IFNAMSIZ ?
 #include <string.h>	// strncmp
+#include <stdlib.h>	// bsearch
 #ifdef NEED_KERNEL
 #define _KERNEL
 #include <sys/cdefs.h>
@@ -152,6 +153,7 @@ extern pthread_mutex_t pfil_global_lock_p;
 #if 1
 //------------------
 
+#if 1 // used for IPFW_UH
 #define rw_assert(a, b)
 #define rw_destroy(_l)
 #define rw_init(_l, msg)	// XXX mtx_init((_l), 0, 0, 0)
@@ -160,6 +162,16 @@ extern pthread_mutex_t pfil_global_lock_p;
 #define rw_wlock(_l)		mtx_lock(_l)
 #define rw_wunlock(_l)		mtx_unlock(_l)
 #define rw_init_flags(_l, s, v)
+#endif // XXX not used anymore
+
+#define rm_init(_l, msg)	// mtx_init(...)
+#define	rm_rlock(_l, _t)	((void)_t, mtx_lock(_l))
+#define	rm_runlock(_l, _t)	mtx_unlock(_l)
+#define	rm_wlock(_l)		mtx_lock(_l)
+#define	rm_wunlock(_l)		mtx_unlock(_l)
+#define rm_destroy(_l)		// XXX
+#define rm_assert(_l, _w)	// XXX
+
 
 #endif // locking on linux ?
 
@@ -321,6 +333,7 @@ extern int securelevel;
 // XXX we could use this to point to the incoming peer
 struct ifnet {
         char    if_xname[IFNAMSIZ];     /* external name (name + unit) */
+	uint32_t	if_index;	// IP_FW_3
 };
 
 struct ifaltq {
@@ -716,6 +729,8 @@ extern int (*ip_dn_io_ptr)(struct mbuf **m, int dir, struct ip_fw_args *fwa);
 
 #define VNET_PTR(n)             (&(n))
 #define VNET(n)                 (n)
+
+#define	IS_DEFAULT_VNET(x)	(1)	// always true
 #endif
 
 VNET_DECLARE(int, ip_defttl);
