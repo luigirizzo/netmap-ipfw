@@ -452,7 +452,7 @@ taskqueue_free(struct taskqueue *queue)
 void *
 kern_malloc(int sz)
 {
-	return malloc(sz);
+	return calloc(sz, 1); /* most of the time we want zeroed memory */
 }
 
 void
