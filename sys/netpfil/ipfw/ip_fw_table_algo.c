@@ -3804,18 +3804,14 @@ lookup_kfib(void *key, int keylen, int fib)
 	if (keylen == 4) {
 		struct sockaddr_in sin;
 		bzero(&sin, sizeof(sin));
-#ifndef linux
 		sin.sin_len = sizeof(struct sockaddr_in);
-#endif /* !linux */
 		sin.sin_family = AF_INET;
 		sin.sin_addr.s_addr = *(in_addr_t *)key;
 		s = (struct sockaddr *)&sin;
 	} else {
 		struct sockaddr_in6 sin6;
 		bzero(&sin6, sizeof(sin6));
-#ifndef linux
 		sin6.sin6_len = sizeof(struct sockaddr_in6);
-#endif /* !linux */
 		sin6.sin6_family = AF_INET6;
 		sin6.sin6_addr = *(struct in6_addr *)key;
 		s = (struct sockaddr *)&sin6;

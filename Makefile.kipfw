@@ -24,6 +24,7 @@ endif
 ifeq ($(OSARCH),Linux)
 	CFLAGS2		+= -D__BSD_VISIBLE
 	CFLAGS2		+= -D_GNU_SOURCE # ffsl
+	CFLAGS2		+= -DNEED_SIN_LEN
 	CFLAGS2		+= -include ../extra/linux_defs.h
 	CFLAGS2		+= -Wno-unused-but-set-variable
 	EFILES_.	+= libutil.h

@@ -159,9 +159,6 @@ extern int optreset;    /* not present in linux */
 long long int strtonum(const char *nptr, long long minval,
         long long maxval, const char **errstr);
 
-/* no sin_len in sockaddr, we only remap in userland */
-#define sin_len sin_zero[0]
-#define sin6_len sin6_flowinfo
 
 struct ether_addr;
 struct ether_addr * ether_aton(const char *a);
@@ -177,8 +174,16 @@ struct ether_addr * ether_aton(const char *a);
 
 #define RTM_VERSION     5       /* Up the ante and ignore older versions */
 
-// #define __unused // conflicts with linux/sysctl.h
 #endif // NEED_SYSCTLBYNAME
+
+#ifdef NEED_SIN_LEN
+/*
+ * linux at least does not have sin_len and sin6_len, so we remap
+ * to some safe fields (check use of sin6_flowinfo XXX)
+ */
+#define sin_len sin_zero[0]
+#define sin6_len sin6_flowinfo
+#endif /* NEED_SIN_LEN */
 
 #ifdef NEED_ROUNDUP2 /* in freensd is in sys/param.h */
 /* round up to the next power of 2 (y) */
