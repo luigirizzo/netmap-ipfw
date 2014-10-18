@@ -120,6 +120,8 @@ EFILES_sys	+= eventhandler.h
 EFILES_sys	+= jail.h ktr.h
 EFILES_sys	+= counter.h
 
+EFILES_vm	+= vm.h vm_extern.h
+
 #EFILES += sys/_lock.h sys/_rwlock.h sys/rwlock.h sys/rmlock.h sys/_mutex.h sys/mutex.h
 #EFILES += sys/condvar.h sys/eventhandler.h # sys/domain.h
 #EFILES += sys/limits.h sys/lock.h sys/mutex.h sys/priv.h

@@ -60,8 +60,8 @@ __FBSDID("$FreeBSD: head/sys/netpfil/ipfw/ip_fw_sockopt.c 273035 2014-10-13 13:4
 #include <net/if.h>
 #include <net/route.h>
 #include <net/vnet.h>
-//#include <vm/vm.h>
-//#include <vm/vm_extern.h>
+#include <vm/vm.h>
+#include <vm/vm_extern.h>
 
 #include <netinet/in.h>
 #include <netinet/ip_var.h> /* hooks */
@@ -152,7 +152,7 @@ static struct ipfw_sopt_handler	scodes[] = {
  * static variables followed by global ones
  */
 
-#ifndef USERSPACE
+#if 1 // ndef USERSPACE
 
 static VNET_DEFINE(uma_zone_t, ipfw_cntr_zone);
 #define	V_ipfw_cntr_zone		VNET(ipfw_cntr_zone)
