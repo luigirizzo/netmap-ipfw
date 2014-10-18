@@ -391,7 +391,7 @@ typedef uint64_t	u_register_t; // XXX not on osx ?
 
 typedef uintptr_t eventhandler_tag;
 #define EVENTHANDLER_REGISTER(_a, _b, ...)	(uintptr_t)_b;
-#define EVENTHANDLER_DEREGISTER(_a, _b, ...)	(uintptr_t)_b;
+#define EVENTHANDLER_DEREGISTER(_a, _b, ...)	(void)_b;
 
 // XXX this needs to be completed
 #define if_name(_ifp)	(_ifp->if_xname)
