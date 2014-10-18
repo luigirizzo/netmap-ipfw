@@ -4688,6 +4688,8 @@ ipfw_add(char *av[])
 	rbufsize = sizeof(rulebuf);
 	memset(&ts, 0, sizeof(ts));
 
+memset(&rulebuf, 0, rbufsize); // XXX
+
 	/* Optimize case with no tables */
 	default_off = sizeof(ipfw_obj_ctlv) + sizeof(ip_fw3_opheader);
 	op3 = (ip_fw3_opheader *)rulebuf;
