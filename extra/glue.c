@@ -427,6 +427,7 @@ __sockopt2(int s, int level, int optname, void *optval, socklen_t *optlen,
 {
 	struct wire_hdr r;
 	int len = optlen && optval ? *optlen : 0;
+	int new_errno;
 
 	ND("dir %d optlen %d level %d optname %d", dir, len, level, optname);
 	/* send request to the server */
@@ -459,7 +460,10 @@ __sockopt2(int s, int level, int optname, void *optval, socklen_t *optlen,
 	}
 	if (optlen)
 		*optlen = ntohl(r.optlen); /* actual len */
-	return 0; // XXX valid ntohl(r.level);
+	new_errno = ntohl(r.level);
+	if (new_errno)
+		errno = new_errno;
+	return (new_errno ? -1 : 0);
 }
 
 /*
