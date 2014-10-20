@@ -123,6 +123,13 @@ sooptcopyout(struct sockopt *sopt, const void *buf, size_t len)
 	return 0;
 }
 
+int
+copyout(const void *kaddr, void *uaddr, size_t len)
+{
+	bcopy(kaddr, uaddr, len);
+	return 0; /* no fault */
+}
+
 /*
  * copy data from userland to kernel
  */

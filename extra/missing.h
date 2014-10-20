@@ -503,6 +503,7 @@ int     netisr_dispatch(u_int proto, struct mbuf *m);
 
 /* definition moved in missing.c */
 int sooptcopyout(struct sockopt *sopt, const void *buf, size_t len);
+int copyout(const void *kaddr, void *uaddr, size_t len);
 
 int sooptcopyin(struct sockopt *sopt, void *buf, size_t len, size_t minlen);
 
