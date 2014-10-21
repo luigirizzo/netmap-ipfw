@@ -47,6 +47,8 @@
 
 #include <stdint.h>	/* linux needs it in addition to sys/types.h */
 #include <sys/types.h>	/* for size_t */
+
+#define true 1		/* stdbool */
 #ifdef _KERNEL		/* prevent a warning */
 #undef _KERNEL
 #include <sys/ioctl.h>
@@ -56,10 +58,14 @@
 #else
 #include <sys/ioctl.h>
 #endif
+
 #include <time.h>
 #ifndef USERSPACE
 #include <netinet/ether.h>
 #endif
+
+
+/*----- */
 
 /* ipfw2.c - from timeconv.h */
 static __inline time_t
@@ -153,9 +159,6 @@ extern int optreset;    /* not present in linux */
 long long int strtonum(const char *nptr, long long minval,
         long long maxval, const char **errstr);
 
-/* no sin_len in sockaddr, we only remap in userland */
-#define sin_len sin_zero[0]
-#define sin6_len sin6_flowinfo
 
 struct ether_addr;
 struct ether_addr * ether_aton(const char *a);
@@ -171,8 +174,22 @@ struct ether_addr * ether_aton(const char *a);
 
 #define RTM_VERSION     5       /* Up the ante and ignore older versions */
 
-// #define __unused // conflicts with linux/sysctl.h
 #endif // NEED_SYSCTLBYNAME
+
+#ifdef NEED_SIN_LEN
+/*
+ * linux at least does not have sin_len and sin6_len, so we remap
+ * to some safe fields (check use of sin6_flowinfo XXX)
+ */
+#define sin_len sin_zero[0]
+#define sin6_len sin6_flowinfo
+#endif /* NEED_SIN_LEN */
+
+#ifdef NEED_ROUNDUP2 /* in freensd is in sys/param.h */
+/* round up to the next power of 2 (y) */
+#define roundup2(x, y)  (((x)+((y)-1))&(~((y)-1))) /* if y is powers of two */
+#endif // NEED_ROUNDUP2
+
 /* possibly redundant, does not harm */
 size_t strlcpy(char * dst, const char * src, size_t siz);
 

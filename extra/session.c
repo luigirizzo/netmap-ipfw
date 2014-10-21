@@ -116,11 +116,18 @@ sooptcopyout(struct sockopt *sopt, const void *buf, size_t len)
 {
 	size_t valsize = sopt->sopt_valsize;
 
-	ND("data len %d sopt_len %d", len, valsize);
+	ND("data len %d sopt_len %d", (int)len, (int)valsize);
 	if (len < valsize)
 		sopt->sopt_valsize = valsize = len;
 	bcopy(buf, sopt->sopt_val, valsize);
 	return 0;
+}
+
+int
+copyout(const void *kaddr, void *uaddr, size_t len)
+{
+	bcopy(kaddr, uaddr, len);
+	return 0; /* no fault */
 }
 
 /*
@@ -131,7 +138,7 @@ sooptcopyin(struct sockopt *sopt, void *buf, size_t len, size_t minlen)
 {
 	size_t valsize = sopt->sopt_valsize;
 
-	ND("have %d len %d minlen %d", valsize, len, minlen);
+	ND("have %d len %d minlen %d", (int)valsize, (int)len, (int)minlen);
 	if (valsize < minlen)
 		return EINVAL;
 	if (valsize > len)

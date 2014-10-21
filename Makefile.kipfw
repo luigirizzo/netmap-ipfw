@@ -15,7 +15,7 @@ OBJPATH = $(M)/../$(OBJDIR)
 ifeq ($(OSARCH),Darwin)
 	CFLAGS2 += -D__BSD_VISIBLE
 	EFILES_.	+= libutil.h
-	EFILES_sys	+= condvar.h priv.h _lock.h rmlock.h cpuset.h
+	EFILES_sys	+= condvar.h priv.h _lock.h cpuset.h
 	EFILES_machine	+= in_cksum.h
 	EFILES_netinet	+= ip_carp.h pim.h sctp.h
 	EFILES_net	+= netisr.h vnet.h
@@ -23,10 +23,12 @@ endif
 
 ifeq ($(OSARCH),Linux)
 	CFLAGS2		+= -D__BSD_VISIBLE
+	CFLAGS2		+= -D_GNU_SOURCE # ffsl
+	CFLAGS2		+= -DNEED_SIN_LEN
 	CFLAGS2		+= -include ../extra/linux_defs.h
 	CFLAGS2		+= -Wno-unused-but-set-variable
 	EFILES_.	+= libutil.h
-	EFILES_sys	+= condvar.h priv.h _lock.h rmlock.h cpuset.h
+	EFILES_sys	+= condvar.h priv.h _lock.h cpuset.h
 	EFILES_sys	+= lock.h ucred.h # taskqueue.h
 	EFILES_sys	+= sockio.h
 	EFILES_sys	+= cpuset.h
@@ -41,7 +43,7 @@ ifeq ($(OSARCH),Windows)
 #	CFLAGS2		+= -include ../extra/linux_defs.h
 	CFLAGS2		+= -Wno-unused-but-set-variable
 #	EFILES_.	+= libutil.h
-#	EFILES_sys	+= condvar.h priv.h _lock.h rmlock.h
+#	EFILES_sys	+= condvar.h priv.h _lock.h
 #	EFILES_sys	+= lock.h ucred.h # taskqueue.h
 #	EFILES_sys	+= sockio.h
 #	EFILES_machine	+= in_cksum.h
@@ -90,7 +92,7 @@ IPFW_SRCS += ipfw2_mod.c # bsd_compat.c
 IPFW_SRCS += missing.c session.c netmap_io.c
 IPFW_CFLAGS= -DINET
 
-E_CFLAGS += -Dradix
+E_CFLAGS += -Dradix -DNEED_ROUNDUP2
 MOD := kipfw
 
 LIBS= -lpthread
@@ -116,7 +118,10 @@ EFILES_sys	+= proc.h sockopt.h sysctl.h
 # new
 EFILES_sys	+= mutex.h _mutex.h _rwlock.h rwlock.h
 EFILES_sys	+= eventhandler.h
-EFILES_sys	+= jail.h ktr.h
+EFILES_sys	+= jail.h ktr.h rmlock.h
+EFILES_sys	+= counter.h
+
+EFILES_vm	+= vm.h vm_extern.h
 
 #EFILES += sys/_lock.h sys/_rwlock.h sys/rwlock.h sys/rmlock.h sys/_mutex.h sys/mutex.h
 #EFILES += sys/condvar.h sys/eventhandler.h # sys/domain.h

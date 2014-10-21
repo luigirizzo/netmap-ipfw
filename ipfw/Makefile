@@ -20,13 +20,14 @@ CFLAGS += $(INCDIRS)
 CFLAGS += -DUSERSPACE	# communicate through userspace
 ifeq ($(OSARCH),Linux)	# XXX untested
     CFLAGS += -D__BSD_VISIBLE
-    CFLAGS += -DNEED_STRTONUM -DNEED_SYSCTLBYNAME
+    CFLAGS += -DNEED_STRTONUM -DNEED_SYSCTLBYNAME -DNEED_ROUNDUP2
+    CFLAGS += -DNEED_SIN_LEN
     CFLAGS += -Wno-unused-but-set-variable
     OBJS += expand_number.o humanize_number.o
 endif
 ifeq ($(OSARCH),Darwin)
     CFLAGS += -D__BSD_VISIBLE
-    CFLAGS += -DNEED_STRTONUM
+    CFLAGS += -DNEED_STRTONUM -DNEED_ROUNDUP2
     OBJS += expand_number.o humanize_number.o
 endif
 

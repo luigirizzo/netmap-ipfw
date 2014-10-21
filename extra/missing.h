@@ -129,11 +129,9 @@ struct mtx {
 struct rwlock {
 	pthread_mutex_t p0;
 };
-#ifndef __FreeBSD__
 struct rmlock {
 	pthread_mutex_t p0;
 };
-#endif
 extern pthread_mutex_t dummynet_mtx_p;
 extern pthread_mutex_t ipfw_dyn_mtx_p;
 extern pthread_mutex_t pfil_global_lock_p;
@@ -152,6 +150,7 @@ extern pthread_mutex_t pfil_global_lock_p;
 #if 1
 //------------------
 
+#if 1 // used for IPFW_UH
 #define rw_assert(a, b)
 #define rw_destroy(_l)
 #define rw_init(_l, msg)	// XXX mtx_init((_l), 0, 0, 0)
@@ -160,6 +159,16 @@ extern pthread_mutex_t pfil_global_lock_p;
 #define rw_wlock(_l)		mtx_lock(_l)
 #define rw_wunlock(_l)		mtx_unlock(_l)
 #define rw_init_flags(_l, s, v)
+#endif // XXX not used anymore
+
+#define rm_init(_l, msg)	// mtx_init(...)
+#define	rm_rlock(_l, _t)	((void)_t, mtx_lock(_l))
+#define	rm_runlock(_l, _t)	mtx_unlock(_l)
+#define	rm_wlock(_l)		mtx_lock(_l)
+#define	rm_wunlock(_l)		mtx_unlock(_l)
+#define rm_destroy(_l)		// XXX
+#define rm_assert(_l, _w)	// XXX
+
 
 #endif // locking on linux ?
 
@@ -299,6 +308,16 @@ void reinject_drop(struct mbuf* m);
 #define IPTOS_DSCP_EF           0xb8
 #define IPTOS_DSCP_CS6          0xc0
 #define IPTOS_DSCP_CS7          0xe0
+
+/*
+ * ECN (Explicit Congestion Notification) codepoints in RFC3168 mapped to the
+ * lower 2 bits of the TOS field.
+ */
+#define IPTOS_ECN_NOTECT        0x00    /* not-ECT */
+#define IPTOS_ECN_ECT1          0x01    /* ECN-capable transport (1) */
+#define IPTOS_ECN_ECT0          0x02    /* ECN-capable transport (0) */
+#define IPTOS_ECN_CE            0x03    /* congestion experienced */
+#define IPTOS_ECN_MASK          0x03    /* ECN field mask */
 
 /*------------------------- */
 
@@ -482,6 +501,7 @@ int     netisr_dispatch(u_int proto, struct mbuf *m);
 
 /* definition moved in missing.c */
 int sooptcopyout(struct sockopt *sopt, const void *buf, size_t len);
+int copyout(const void *kaddr, void *uaddr, size_t len);
 
 int sooptcopyin(struct sockopt *sopt, void *buf, size_t len, size_t minlen);
 
@@ -716,6 +736,8 @@ extern int (*ip_dn_io_ptr)(struct mbuf **m, int dir, struct ip_fw_args *fwa);
 
 #define VNET_PTR(n)             (&(n))
 #define VNET(n)                 (n)
+
+#define	IS_DEFAULT_VNET(x)	(1)	// always true
 #endif
 
 VNET_DECLARE(int, ip_defttl);
