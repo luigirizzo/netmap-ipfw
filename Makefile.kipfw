@@ -18,7 +18,7 @@ ifeq ($(OSARCH),Darwin)
 	EFILES_sys	+= condvar.h priv.h _lock.h cpuset.h
 	EFILES_machine	+= in_cksum.h
 	EFILES_netinet	+= ip_carp.h pim.h sctp.h
-	EFILES_net	+= netisr.h vnet.h
+	EFILES_net	+= netisr.h
 endif
 
 ifeq ($(OSARCH),Linux)
@@ -34,7 +34,7 @@ ifeq ($(OSARCH),Linux)
 	EFILES_sys	+= cpuset.h
 	EFILES_machine	+= in_cksum.h
 	EFILES_netinet	+= in_pcb.h ip_carp.h pim.h sctp.h tcp_var.h
-	EFILES_net	+= if_types.h bpf.h netisr.h vnet.h
+	EFILES_net	+= if_types.h bpf.h netisr.h
 	EFILES_linux	+= module.h
 endif
 
@@ -48,12 +48,11 @@ ifeq ($(OSARCH),Windows)
 #	EFILES_sys	+= sockio.h
 #	EFILES_machine	+= in_cksum.h
 #	EFILES_netinet	+= in_pcb.h ip_carp.h pim.h sctp.h tcp_var.h
-#	EFILES_net	+= if_types.h bpf.h netisr.h vnet.h
+#	EFILES_net	+= if_types.h bpf.h netisr.h
 #	EFILES_linux	+= module.h
 	EFILES_sys	+= sockio.h
 	EFILES_net	+= ethernet.h
 	EFILES_sys	+= condvar.h priv.h socketvar.h ucred.h
-	EFILES_net	+= vnet.h
 	EFILES_netinet	+= in_pcb.h ip_carp.h pim.h sctp.h tcp_var.h
 endif
 
@@ -110,7 +109,7 @@ EFILES_.	+= timeconv.h
 
 EFILES_altq	+= if_altq.h
 
-EFILES_net	+= if_var.h route.h if_clone.h
+EFILES_net	+= if_var.h route.h if_clone.h vnet.h
 EFILES_netpfil/pf	+= pf_mtag.h
 EFILES_netinet	+= in_var.h ip_var.h udp_var.h
 EFILES_netinet6	+= ip6_var.h

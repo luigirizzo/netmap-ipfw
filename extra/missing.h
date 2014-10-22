@@ -726,6 +726,7 @@ extern int (*ip_dn_io_ptr)(struct mbuf **m, int dir, struct ip_fw_args *fwa);
 
 #define VNET_NAME(n)            n
 #define VNET_DECLARE(t, n)      extern t n
+#define VNET_PCPUSTAT_DECLARE(t, n)      extern t n
 #define VNET_DEFINE(t, n)       t n
 #define _VNET_PTR(b, n)         &VNET_NAME(n)
 /*
