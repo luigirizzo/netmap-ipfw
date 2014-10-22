@@ -86,42 +86,6 @@ struct route {
 };
 
 
-#if 0 // already in main header
-struct ifaltq {
-	void *ifq_head;
-};
-
-struct ifnet {
-	char    if_xname[IFNAMSIZ];     /* external name (name + unit) */
-        struct ifaltq if_snd;          /* output queue (includes altq) */
-};
-
-/* involves mbufs */
-int in_cksum(struct mbuf *m, int len);
-#define divert_cookie(mtag) 0
-#define divert_info(mtag) 0
-#define INADDR_TO_IFP(a, b) b = NULL
-#define pf_find_mtag(a) NULL
-#define pf_get_mtag(a) NULL
-#define AF_LINK AF_ASH	/* ? linux/socket.h */
-
-struct pf_mtag {
-	void            *hdr;           /* saved hdr pos in mbuf, for ECN */
-	sa_family_t      af;            /* for ECN */
-        u_int32_t        qid;           /* queue id */
-};
-#endif
-
-/* radix related */
-
-#if 0
-struct radix_node {
-	caddr_t rn_key;         /* object of search */
-	caddr_t rn_mask;        /* netmask, if present */
-};
-#endif
-
-
 /* missing functions */
 
 /* from bsd sys/queue.h */
