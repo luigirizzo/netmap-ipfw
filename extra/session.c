@@ -11,6 +11,7 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>	// TCP_NODELAY
 #include <sys/cpuset.h> // freebsd, used in rmlock
 #include <net/pfil.h>	// PFIL_IN
 #include <sys/errno.h>
@@ -388,7 +389,10 @@ sockopt_handler(struct sess *sess, void *arg)
 			sopt.sopt_name,
 			sopt.sopt_val,
 			(int)sopt.sopt_valsize);
+
+		/* now call the handler */
 		r.level = htonl(ctl_handler(&sopt));
+		ND("handler returns %d", ntohl(r.level));
 		r.optlen = htonl(0);	/* default len */
 		r.dir = htonl(sopt.sopt_dir);
 		/* prepare the buffer for writing */
@@ -493,6 +497,14 @@ listener(struct sess *sess, void *arg)
 	if (fd < 0)
 		return -1;
 	fcntl(fd, F_SETFL, O_NONBLOCK);
+#ifdef setsockopt /* make sure we don't redefine it */
+#error cannot compile this
+#endif
+	{
+		int on = 1, ret;
+		ret = setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on));
+		ND("TCP_NODELAY returns %d", ret);
+	}
 	new_session(fd, sess->arg ? sockopt_handler: packet_handler,
 		sess->arg, WANT_READ);
 	return 0;

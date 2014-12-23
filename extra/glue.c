@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>	/* sockaddr_in */
+#include <netinet/tcp.h>	/* TCP_NODELAY */
 #include <sys/uio.h>
 #include <unistd.h>	/* uint* types */
 #include <errno.h>
@@ -536,6 +537,15 @@ struct rtnl_handle rth;
         if (connect(conn_fd, (struct sockaddr*) &server, sizeof(server)) < 0) {
 		perror("connect");
 		return -1;
+	}
+#ifdef setsockopt /* we want the real one here */
+#undef setsockopt
+#undef getsockopt
+#endif
+	{
+		int on = 1, ret;
+		ret = setsockopt(conn_fd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on));
+		ND("set TCP_NODELAY %d returns %d", on, ret);
 	}
 	if (1)
 		fprintf(stderr, "connected to %s:%d\n",
