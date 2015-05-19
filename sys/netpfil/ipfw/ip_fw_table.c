@@ -553,7 +553,7 @@ add_table_entry(struct ip_fw_chain *ch, struct tid_info *ti,
 	struct tentry_info *ptei;
 	struct tableop_state ts;
 	char ta_buf[TA_BUF_SZ];
-	caddr_t ta_buf_m, v;
+	caddr_t ta_buf_m = NULL, v;
 
 	memset(&ts, 0, sizeof(ts));
 	ta = NULL;
