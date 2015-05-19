@@ -149,10 +149,10 @@ extern moduledata_t *moddesc_dn_wf2qp;
 extern moduledata_t *moddesc_dn_rr;
 extern moduledata_t *moddesc_dn_qfq;
 extern moduledata_t *moddesc_dn_prio;
-extern void *sysinit_ipfw_init;
-extern void *sysuninit_ipfw_destroy;
-extern void *sysinit_vnet_ipfw_init;
-extern void *sysuninit_vnet_ipfw_uninit;
+extern int (*sysinit_ipfw_init)(void *);
+extern int (*sysuninit_ipfw_destroy)(void *);
+extern int (*sysinit_vnet_ipfw_init)(void *);
+extern int (*sysuninit_vnet_ipfw_uninit)(void *);
 
 /*---
  * Glue code to implement the registration of children with the parent.
@@ -168,7 +168,8 @@ struct mod_args {
         const char *name;
         int order;
         struct moduledata *mod;
-        void (*init)(void), (*uninit)(void);
+        int (*init)(void *);
+	int (*uninit)(void *);
 };
 
 static unsigned int mod_idx;
@@ -176,7 +177,7 @@ static struct mod_args mods[10];        /* hard limit to 10 modules */
 
 int
 my_mod_register(const char *name, int order,
-        struct moduledata *mod, void *init, void *uninit);
+        struct moduledata *mod, int (*init)(void *), int (*uninit)(void *));
 /*
  * my_mod_register should be called automatically as the init
  * functions in the submodules. Unfortunately this compiler/linker
@@ -184,7 +185,7 @@ my_mod_register(const char *name, int order,
  */
 int
 my_mod_register(const char *name, int order,
-        struct moduledata *mod, void *init, void *uninit)
+        struct moduledata *mod, int (*init)(void *), int (*uninit)(void *))
 {
         struct mod_args m;
  
@@ -215,7 +216,7 @@ init_children(void)
                 if (m->mod && m->mod->evhand)
                         m->mod->evhand(NULL, MOD_LOAD, m->mod->priv);
                 else if (m->init)
-                        m->init();
+                        m->init(NULL);
         }
 }
 
@@ -233,7 +234,7 @@ fini_children(void)
                 if (m->mod && m->mod->evhand)
                         m->mod->evhand(NULL, MOD_UNLOAD, m->mod->priv);
                 else if (m->uninit)
-                        m->uninit();
+                        m->uninit(NULL);
         }
 }
 /*--- end of module binding helper functions ---*/

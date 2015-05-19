@@ -5,13 +5,13 @@
 #define _SYS_KERNEL_H_
 
 #define SYSINIT(a, b, c, d, e)  \
-        void *sysinit_ ## d = d
+        int (*sysinit_ ## d)(void *) = (int (*)(void *))(d)
 #define VNET_SYSINIT(a, b, c, d, e)  \
-        void *sysinit_ ## d = d
+        SYSINIT(a, b, c, d, e)
 #define SYSUNINIT(a, b, c, d, e)  \
-        void *sysuninit_ ## d = d
+        int  (*sysuninit_ ## d)(void *) = (int (*)(void *))(d)
 #define VNET_SYSUNINIT(a, b, c, d, e)  \
-        void *sysuninit_ ## d = d
+        SYSUNINIT(a, b, c, d, e)
 
 /*
  * Some enumerated orders; "ANY" sorts last.

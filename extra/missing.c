@@ -535,14 +535,14 @@ kesysctl_emu_get(struct sockopt* sopt)
 		pdata = (unsigned char*)(entry+1);
 		pstring = pdata+GST.entry[i].head.datalen;
 		if  (entry->flags & SYSCTLTYPE_PROC) {
-			int (*f)(SYSCTL_HANDLER_ARGS);
+			sysctl_h_fn_t *f;
 			int tmp = 0, ret;
 			struct sysctl_req req;
 
 			bzero(&req, sizeof(req));
 			req.oldlen = req.newlen = sizeof(int);
 			req.oldptr = &tmp;
-			f = (void *)GST.entry[i].data;
+			f = GST.entry[i].fn;
 			ND("-- %s is a proc -- at %p", GST.entry[i].name, f);
 			ret = f(NULL, NULL, 0, &req);
 			ND("-- %s returns %d", GST.entry[i].name, ret);
@@ -598,7 +598,7 @@ kesysctl_emu_set(void* p, int l)
 			req.oldlen = req.newlen = sizeof(int);
 			req.oldptr = &tmp;
 			req.newptr = pdata;
-			f = (void *)GST.entry[i].data;
+			f = GST.entry[i].fn;
 			ND("-- %s is a proc -- at %p", GST.entry[i].name, f);
 			ret = f(NULL, NULL, 0, &req);
 			ND("-- %s returns %d", GST.entry[i].name, ret);
@@ -692,7 +692,7 @@ keexit_GST(void)
 }
 
 void
-sysctl_pushback(char* name, int flags, int datalen, void* data)
+sysctl_pushback(char* name, int flags, int datalen, void* data, sysctl_h_fn_t *fn)
 {
 	if (GST.count >= GST_HARD_LIMIT) {
 		printf("WARNING: global sysctl table full, this entry will not be added,"
@@ -703,6 +703,7 @@ sysctl_pushback(char* name, int flags, int datalen, void* data)
 	GST.entry[GST.count].name = name;
 	GST.entry[GST.count].head.flags = flags;
 	GST.entry[GST.count].data = data;
+	GST.entry[GST.count].fn = fn;
 	GST.entry[GST.count].head.datalen = datalen;
 	GST.entry[GST.count].head.blocklen =
 		((sizeof(struct sysctlhead) + GST.entry[GST.count].head.namelen +

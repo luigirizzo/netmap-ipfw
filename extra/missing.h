@@ -585,6 +585,7 @@ struct sysctl_req {
 
 #define SYSCTL_HANDLER_ARGS 		\
 	struct sysctl_oid *oidp, void *arg1, int arg2, struct sysctl_req *req
+typedef int (sysctl_h_fn_t)(SYSCTL_HANDLER_ARGS);
 int sysctl_handle_int(SYSCTL_HANDLER_ARGS);
 int sysctl_handle_long(SYSCTL_HANDLER_ARGS); 
 
@@ -613,6 +614,7 @@ struct sysctlentry {
 	struct sysctlhead head;
 	char* name;
 	void* data;
+	sysctl_h_fn_t *fn;
 };
 
 struct sysctltable {
@@ -634,27 +636,27 @@ struct sysctltable {
 /* XXX remove duplication */
 #define SYSCTL_INT(a,b,c,d,e,f,g) 				\
 	sysctl_pushback(STRINGIFY(a) "." STRINGIFY(c) + 1,	\
-		(d) | (SYSCTLTYPE_INT << 2), sizeof(*e), e)
+		(d) | (SYSCTLTYPE_INT << 2), sizeof(*e), e, NULL)
 
 #define SYSCTL_VNET_INT(a,b,c,d,e,f,g)				\
 	sysctl_pushback(STRINGIFY(a) "." STRINGIFY(c) + 1,	\
-		(d) | (SYSCTLTYPE_INT << 2), sizeof(*e), e)
+		(d) | (SYSCTLTYPE_INT << 2), sizeof(*e), e, NULL)
 
 #define SYSCTL_UINT(a,b,c,d,e,f,g)				\
 	sysctl_pushback(STRINGIFY(a) "." STRINGIFY(c) + 1,	\
-		(d) | (SYSCTLTYPE_UINT << 2), sizeof(*e), e)
+		(d) | (SYSCTLTYPE_UINT << 2), sizeof(*e), e, NULL)
 
 #define SYSCTL_VNET_UINT(a,b,c,d,e,f,g)				\
 	sysctl_pushback(STRINGIFY(a) "." STRINGIFY(c) + 1,	\
-		(d) | (SYSCTLTYPE_UINT << 2), sizeof(*e), e)
+		(d) | (SYSCTLTYPE_UINT << 2), sizeof(*e), e, NULL)
 
 #define SYSCTL_LONG(a,b,c,d,e,f,g)				\
 	sysctl_pushback(STRINGIFY(a) "." STRINGIFY(c) + 1,	\
-		(d) | (SYSCTLTYPE_LONG << 2), sizeof(*e), e)
+		(d) | (SYSCTLTYPE_LONG << 2), sizeof(*e), e, NULL)
 
 #define SYSCTL_ULONG(a,b,c,d,e,f,g)				\
 	sysctl_pushback(STRINGIFY(a) "." STRINGIFY(c) + 1,	\
-		(d) | (SYSCTLTYPE_ULONG << 2), sizeof(*e), e)
+		(d) | (SYSCTLTYPE_ULONG << 2), sizeof(*e), e, NULL)
 #define TUNABLE_INT(a,b)
 
 /*
@@ -663,14 +665,14 @@ struct sysctltable {
  */
 #define SYSCTL_VNET_PROC(a,b,c,d,e,f,g,h,i)			\
 	sysctl_pushback(STRINGIFY(a) "." STRINGIFY(c) + 1,	\
-		(d), 4 /* XXX large */, g)
+		(d), 4 /* XXX large */, NULL, g)
 
 
 void keinit_GST(void);
 void keexit_GST(void);
 int kesysctl_emu_set(void* p, int l);
 int kesysctl_emu_get(struct sockopt* sopt);
-void sysctl_pushback(char* name, int flags, int datalen, void* data);
+void sysctl_pushback(char* name, int flags, int datalen, void* data, sysctl_h_fn_t *fn);
 
 #endif /* EMULATE_SYSCTL */
 
