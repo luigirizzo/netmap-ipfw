@@ -648,7 +648,7 @@ match_token(struct _s_x *table, char *string)
 int
 match_token_relaxed(struct _s_x *table, char *string)
 {
-	struct _s_x *pt, *m;
+	struct _s_x *pt, *m = NULL;
 	int i, c;
 
 	i = strlen(string);
