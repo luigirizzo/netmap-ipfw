@@ -65,8 +65,8 @@ struct skbuf;
 struct mbuf {
 	struct mbuf *m_next;
 	struct mbuf *m_nextpkt;
-	void *m_data;
-	int m_len;	/* length in this mbuf */
+	void * m_data; /* XXX should change to caddr_t */
+	int32_t m_len;	/* length in this mbuf */
 	int m_flags;
 	struct {
 		struct ifnet *rcvif;
@@ -118,7 +118,7 @@ static __inline struct mbuf	*m_dup(struct mbuf *m, int n)
 	(void)n;	/* UNUSED */
 	D("unimplemented, expect panic");
 	return NULL;
-};
+}
 
 
 static __inline void
@@ -188,7 +188,7 @@ m_tag_alloc(uint32_t cookie, int type, int length, int wait)
 		ND("tag %p cookie %d type %d", m, cookie, type);
 	}
 	return m;
-};
+}
 
 #define	MTAG_ABI_COMPAT		0		/* compatibility ABI */
 
@@ -205,13 +205,13 @@ m_tag_first(struct mbuf *m)
 	t = SLIST_FIRST(&m->m_pkthdr.tags);
 	ND("mbuf %p has %p", m, t);
 	return t;
-};
+}
 
 static __inline void
 m_tag_delete(struct mbuf *m, struct m_tag *t)
 {
 	D("mbuf %p tag %p, ******* unimplemented", m, t);
-};
+}
 
 static __inline struct m_tag *
 m_tag_locate(struct mbuf *m, u_int32_t cookie, int x, struct m_tag *t)
@@ -233,7 +233,7 @@ m_tag_locate(struct mbuf *m, u_int32_t cookie, int x, struct m_tag *t)
 		return NULL;
 	} else
 		return tag;
-};
+}
 
 static __inline struct m_tag *
 m_tag_find(struct mbuf *m, int type, struct m_tag *start)
@@ -241,7 +241,7 @@ m_tag_find(struct mbuf *m, int type, struct m_tag *start)
 	D("m %p", m);
 	return (SLIST_EMPTY(&m->m_pkthdr.tags) ? (struct m_tag *)NULL :
 		m_tag_locate(m, MTAG_ABI_COMPAT, type, start));
-};
+}
 
 #define M_SETFIB(_m, _fib)	/* nothing on linux */
 

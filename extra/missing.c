@@ -146,7 +146,7 @@ m_freem(struct mbuf *m)
 	ND("free(m = %p, M_IPFW);", m);
 	m->m_next = mbuf_freelist;
 	mbuf_freelist = m;
-};
+}
 
 /* from net/netisr.c */
 int
