@@ -69,7 +69,7 @@ void panic(const char *fmt, ...);
 /* portability features, to be set before the rest: */
 #define WITHOUT_BPF		/* do not use bpf logging */
 
-#define MALLOC_DECLARE(x)	/* nothing */
+#define MALLOC_DECLARE(x)	struct __hack /* nothing */
 // XXX kernel malloc/free
 extern void *kern_malloc(int);
 extern void kern_free(void *);
@@ -197,10 +197,13 @@ struct ipfw_rule_ref {
 	uint32_t	info;		/* see below			*/
 };
 
+/* ISO C restricts enumerator values to range of 'int'
+ * so we need IN to have a smaller value
+ */
 enum {
 	IPFW_INFO_MASK	= 0x0000ffff,
 	IPFW_INFO_OUT	= 0x00000000,	/* outgoing, just for convenience */
-	IPFW_INFO_IN	= 0x80000000,	/* incoming, overloads dir */
+	IPFW_INFO_IN	= 0x00800000,	/* incoming, overloads dir */
 	IPFW_ONEPASS	= 0x40000000,	/* One-pass, do not reinject */
 	IPFW_IS_MASK	= 0x30000000,	/* which source ? */
 	IPFW_IS_DIVERT	= 0x20000000,

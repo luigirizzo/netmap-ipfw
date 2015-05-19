@@ -26,18 +26,18 @@ typedef struct moduledata {
  * XXX use the gcc .init functions
  */
 #define DECLARE_MODULE(a, md, c,d)                              \
-    moduledata_t *moddesc_##a = &md;
+    moduledata_t *moddesc_##a = &md
 
 /*
  * XXX MODULE_VERSION is define in linux too
  */
-#define MODULE_DEPEND(a,b,c,d,e)
+#define MODULE_DEPEND(a,b,c,d,e)	struct __module_depend
 #if 1 // !defined(__FreeBSD__) // defined( __linux__ ) || defined( _WIN32 )
 #undef MODULE_VERSION
-#define MODULE_VERSION(a,b)
+#define MODULE_VERSION(a,b)	struct __module_version
 #endif
 
-#define FEATURE(a, b)
+#define FEATURE(a, b)		struct __feature
 
 #endif  /* _SYS_MODULE_H_ */
 

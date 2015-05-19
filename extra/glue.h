@@ -42,7 +42,7 @@
  * common definitions to allow portability
  */
 #ifndef __FBSDID
-#define __FBSDID(x)
+#define __FBSDID(x)	struct __hack
 #endif  /* FBSDID */
 
 #include <stdint.h>	/* linux needs it in addition to sys/types.h */
@@ -406,7 +406,7 @@ typedef uintptr_t eventhandler_tag;
 #define rtalloc1_fib(_a, ...)	NULL
 #define rt_key(_a)	NULL
 #define rt_mask(_a)	NULL
-#define RTFREE_LOCKED(_a)	NULL
+#define RTFREE_LOCKED(_a)	((void)NULL)
 struct rtentry {
 };
 #define rt_tables_get_rnh(_a, _b)	NULL
