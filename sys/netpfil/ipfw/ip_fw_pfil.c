@@ -330,14 +330,18 @@ ipfw_check_frame(void *arg, struct mbuf **m0, struct ifnet *dst, int dir,
 		}
 	}
 	eh = mtod(m, struct ether_header *);
+#if defined(USERSPACE)
+	args.eh = eh;
+#else
 	save_eh = *eh;			/* save copy for restore below */
+	args.eh = &save_eh;	/* MAC header for bridged/MAC packets	*/
+#endif
 	m_adj(m, ETHER_HDR_LEN);	/* strip ethernet header */
 
 	args.m = m;		/* the packet we are looking at		*/
 	args.oif = dir == PFIL_OUT ? dst: NULL;	/* destination, if any	*/
 	args.next_hop = NULL;	/* we do not support forward yet	*/
 	args.next_hop6 = NULL;	/* we do not support forward yet	*/
-	args.eh = &save_eh;	/* MAC header for bridged/MAC packets	*/
 	args.inp = NULL;	/* used by ipfw uid/gid/jail rules	*/
 	i = ipfw_chk(&args);
 	m = args.m;

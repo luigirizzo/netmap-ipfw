@@ -204,7 +204,10 @@ sysctl_handle_long(SYSCTL_HANDLER_ARGS)
 void
 ether_demux(struct ifnet *ifp, struct mbuf *m)
 {
-	D("incomplete");
+	if (m->__m_callback)
+		m->__m_callback(m, 0);
+	else
+		D("missing callback mbuf %p", m);
 	return;
 }
 

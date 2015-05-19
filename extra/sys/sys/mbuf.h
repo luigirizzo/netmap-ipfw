@@ -74,6 +74,7 @@ struct mbuf {
 		SLIST_HEAD (packet_tags, m_tag) tags;
 	} m_pkthdr;
 	struct skbuf *m_skb;
+	int __max_m_len; /* original value */
 
 	/*
 	 * in-stack mbuffers point to an external buffer,
@@ -300,8 +301,14 @@ m_gethdr(int how, short type)
  * allocated, how specifies whether to wait.  If the allocation fails, the
  * original mbuf chain is freed and m is set to NULL.
  */
-#define M_PREPEND(m, plen, how) {				\
-	D("M_PREPEND not implemented");				\
+static inline void M_PREPEND(struct mbuf *m, int plen, int how)
+{				\
+	if (plen < 0 || plen + m->m_len > m->__max_m_len) {
+		D("size too large");
+	} else {
+		m->m_data -= plen;
+		m->m_len += plen;
+	}
 }
 
 static inline void
@@ -311,7 +318,7 @@ m_adj(struct mbuf *mp, int req_len)
 		D("no m_adj for len %d in mlen %d", req_len, mp->m_len);
 	} else {
 		mp->m_data += req_len;
-		mp->m_len += req_len;
+		mp->m_len -= req_len;
 	}
 }
 

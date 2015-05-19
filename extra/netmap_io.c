@@ -211,7 +211,6 @@ netmap_read(struct sess *sess, void *arg)
 	struct mbuf dm, dm0;
 	struct ip_fw_args args;
 	struct my_netmap_port *peer = port->peer;
-	struct txq_entry *x = peer->q;
 	struct nm_desc *srcp = port->d;
 
 	bzero(&dm0, sizeof(dm0));
@@ -261,25 +260,44 @@ netmap_read(struct sess *sess, void *arg)
 		dm.__m_callback = netmap_enqueue;
 
 	/* XXX can we use check_frame ? */
-		dm.m_pkthdr.rcvif = &port->ifp;
+	    if (1) { /* L2 */
+		hdrlen = 0;
+	    } else {
 		hdrlen = ((uint16_t *)buf)[6] == htons(0x8100) ? 18 : 14;
+	    }
+		dm.m_pkthdr.rcvif = &port->ifp;
 		ND(1, "hdrlen %d", hdrlen);
 		dm.m_data = buf + hdrlen;	// skip mac + vlan hdr if any
 		dm.m_len = dm.m_pkthdr.len = len - hdrlen;
+		dm.__max_m_len = dm.m_len;
 		ND("slot %d len %d", i, dm.m_len);
 		// XXX ipfw_chk is slightly faster
 		//ret = ipfw_chk(&args);
+	    if (hdrlen > 0) {
 		ipfw_check_packet(NULL, &args.m, NULL, PFIL_IN, NULL);
+	    } else {
+		ipfw_check_frame(NULL, &args.m, NULL, PFIL_IN, NULL);
+	    }
+
 		if (args.m != NULL) {	// ok. forward
 			/*
 			 * XXX TODO remember to clean up any tags that
 			 * ipfw may have allocated
 			 */
-			u_int dst = peer->cur_txq;
+			/*
+			 * if peer has been modified, bounce back
+			 * to the original
+			 */
+			struct my_netmap_port *d =
+				(dm.__m_peer == peer) ? peer: port;
+			u_int dst = d->cur_txq;
+			struct txq_entry *x = d->q;
+			if (d != peer)
+				fprintf(stderr, "packet bounced back\n");
 			x[dst].ring_or_mbuf = ring;
 			x[dst].slot_idx = src;
 			x[dst].flags = TXQ_IS_SLOT;
-			peer->cur_txq++;
+			d->cur_txq++;
 		}
 		ND("exit at slot %d", next_i);
 	    }

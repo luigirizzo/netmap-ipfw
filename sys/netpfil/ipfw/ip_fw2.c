@@ -2380,8 +2380,10 @@ do {								\
 				break;
 
 			case O_FORWARD_IP:
+#ifndef USERSPACE /* allow forward in userspace */
 				if (args->eh)	/* not valid on layer2 pkts */
 					break;
+#endif /* !USERSPACE */
 				if (q == NULL || q->rule != f ||
 				    dyn_dir == MATCH_FORWARD) {
 				    struct sockaddr_in *sa;
