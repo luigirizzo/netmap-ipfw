@@ -396,6 +396,9 @@ sockopt_handler(struct sess *sess, void *arg)
 		r.optlen = htonl(0);	/* default len */
 		r.dir = htonl(sopt.sopt_dir);
 		/* prepare the buffer for writing */
+		if (d->wr != NULL) { /* previous write buffer */
+			free(d->wr);
+		}
 		d->wr = d->rd;
 		d->rd = NULL;
 		d->wr->used = sopt.sopt_valsize + sizeof(r);
@@ -439,6 +442,7 @@ done:
 		if (d->wr)
 			free(d->wr);
 		d->rd = d->wr = NULL;
+		free(d); /* private data */
 		sess->flags = WANT_DELETE;
 	}
 	return error;
