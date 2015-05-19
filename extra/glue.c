@@ -547,7 +547,7 @@ struct rtnl_handle rth;
 		ret = setsockopt(conn_fd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on));
 		ND("set TCP_NODELAY %d returns %d", on, ret);
 	}
-	if (1)
+	if (0)
 		fprintf(stderr, "connected to %s:%d\n",
 			inet_ntoa(server.sin_addr), ntohs(server.sin_port));
 #endif
