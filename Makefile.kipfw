@@ -68,6 +68,7 @@ E_CFLAGS += -DKERNEL_SIDE	# build the kernel side of the firewall
 E_CFLAGS += -DUSERSPACE	# communicate through userspace
 E_CFLAGS += $(EFLAGS) $(NETMAP_FLAGS)
 E_CFLAGS += -DINET
+#E_CFLAGS += -DINET6
 E_CFLAGS += -DIPFIREWALL_DEFAULT_TO_ACCEPT
 E_CFLAGS += -D_BSD_SOURCE 
 E_CFLAGS += -D_DEFAULT_SOURCE # on glibc 2.20 and above
@@ -86,7 +87,7 @@ SRCS_IPFW	+= dn_sched_fifo.c dn_sched_wf2q.c
 SRCS_IPFW	+= dn_sched_rr.c dn_sched_qfq.c
 SRCS_IPFW	+= dn_sched_prio.c
 SRCS_NET	 = radix.c
-SRCS_NETINET	 = in_cksum.c
+SRCS_NETINET	 = in_cksum.c in6_cksum.c
 # Module glue and functions missing in linux
 IPFW_SRCS	= $(SRCS_IPFW) $(SRCS_NET) $(SRCS_NETINET)
 IPFW_SRCS += ipfw2_mod.c # bsd_compat.c
@@ -115,7 +116,7 @@ EFILES_altq	+= if_altq.h
 EFILES_net	+= if_var.h route.h if_clone.h
 EFILES_netpfil/pf	+= pf_mtag.h
 EFILES_netinet	+= in_var.h ip_var.h udp_var.h
-EFILES_netinet6	+= ip6_var.h
+EFILES_netinet6	+= ip6_var.h in6_var.h scope6_var.h
 EFILES_sys	+= proc.h sockopt.h sysctl.h
 # new
 EFILES_sys	+= mutex.h _mutex.h _rwlock.h rwlock.h

@@ -76,6 +76,22 @@ extern void kern_free(void *);
 #define malloc(_size, type, flags) kern_malloc(_size)
 #define free(_var, type) kern_free(_var)
 
+/* both linux and FreeBSD have queue.h */
+#include <sys/queue.h>	// for some things in INET6
+
+#ifndef TAILQ_FOREACH_SAFE /* these are missing in linux */
+/* from bsd sys/queue.h */
+#define TAILQ_FOREACH_SAFE(var, head, field, tvar)                      \
+        for ((var) = TAILQ_FIRST((head));                               \
+            (var) && ((tvar) = TAILQ_NEXT((var), field), 1);            \
+            (var) = (tvar))
+
+#define SLIST_FOREACH_SAFE(var, head, field, tvar)                      \
+        for ((var) = SLIST_FIRST((head));                               \
+            (var) && ((tvar) = SLIST_NEXT((var), field), 1);            \
+            (var) = (tvar))
+#endif /* !TAILQ_FOREACH_SAFE */
+
 /* inet_ntoa_r() differs in userspace and kernel.
  * We load netinet/in.h so we get the kernel prototype ?
  * but we also need to put #defines in the two places where
@@ -333,6 +349,7 @@ void reinject_drop(struct mbuf* m);
 #define	CARP_ADVERTISEMENT	0x01
 #define PRIV_NETINET_IPFW       491     /* Administer IPFW firewall. */
 #define IP_FORWARDING           0x1             /* most of ip header exists */
+#define IPV6_FORWARDING         0x2             /* most of ip header exists */
 #define NETISR_IP       2               /* same as AF_INET */
 #define PRIV_NETINET_DUMMYNET   494     /* Administer DUMMYNET. */
 
@@ -341,10 +358,23 @@ extern int securelevel;
 #define if_xname        name
 #define if_snd          XXX
 
+TAILQ_HEAD(ifnethead, ifnet);	 // XXX inet6
+TAILQ_HEAD(ifaddrhead, ifaddr);	 // XXX inet6
+//struct ifaddr;
+
 // XXX we could use this to point to the incoming peer
 struct ifnet {
         char    if_xname[IFNAMSIZ];     /* external name (name + unit) */
 	uint32_t	if_index;	// IP_FW_3
+
+// XXX for inet6
+	TAILQ_ENTRY(ifnet) if_link;
+	struct  ifaddrhead if_addrhead;
+};
+
+struct ifaddr {
+	struct  sockaddr *ifa_addr;
+	TAILQ_ENTRY(ifaddr) ifa_link;
 };
 
 struct ifaltq {
@@ -467,16 +497,6 @@ long random(void);
  */
 //int64_t div64(int64_t a, int64_t b);
 
-/* from bsd sys/queue.h */
-#define TAILQ_FOREACH_SAFE(var, head, field, tvar)                      \
-        for ((var) = TAILQ_FIRST((head));                               \
-            (var) && ((tvar) = TAILQ_NEXT((var), field), 1);            \
-            (var) = (tvar))
-
-#define SLIST_FOREACH_SAFE(var, head, field, tvar)                      \
-        for ((var) = SLIST_FIRST((head));                               \
-            (var) && ((tvar) = SLIST_NEXT((var), field), 1);            \
-            (var) = (tvar))
 
 /*-------------------------------------------------*/
 #define RT_NUMFIBS 1
@@ -499,6 +519,26 @@ struct inpcb;
 struct mbuf *ip_reass(struct mbuf *);
 int ip_output(struct mbuf *m, struct mbuf *opt, struct route *ro, int flags,
     struct ip_moptions *imo, struct inpcb *inp);
+
+/* from sys/netinet6/ip6_output.c */
+struct ip6_pktopts;
+struct ip6_moptions;
+struct ifnet;
+struct route_in6;
+int ip6_output(struct mbuf *m0, struct ip6_pktopts *opt,
+    struct route_in6 *ro, int flags, struct ip6_moptions *im6o,
+    struct ifnet **ifpp, struct inpcb *inp);
+
+struct in6_addr;
+char *ip6_sprintf(char *ip6buf, const struct in6_addr *addr);
+
+#define in6_localaddr(x)	0
+#define in6_localip(x)	0
+#define in6_getscope(x)	0
+
+int in6_cksum(struct mbuf *m, u_int8_t nxt, u_int32_t off, u_int32_t len);
+
+
 
 /* from net/netisr.c -- fails on FreeBSD */
 int     netisr_dispatch(u_int proto, struct mbuf *m);
@@ -750,6 +790,15 @@ extern int (*ip_dn_io_ptr)(struct mbuf **m, int dir, struct ip_fw_args *fwa);
 VNET_DECLARE(int, ip_defttl);
 #define V_ip_defttl    VNET(ip_defttl);
 
+#ifdef INET6
+/* from if_var.h, needed for INET6 */
+
+VNET_DECLARE(struct ifnethead, ifnet);
+#define V_ifnet    VNET(ifnet)
+
+#define if_addr_rlock(_x)
+
+#endif
 
 // int ipfw_check_hook(void *arg, struct mbuf **m0, struct ifnet *ifp, int dir, struct inpcb *inp);
 // XXX used in netmap_io.c

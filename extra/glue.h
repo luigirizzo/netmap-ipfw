@@ -55,6 +55,9 @@
 #include <sys/time.h>
 #include <errno.h>	/* we want errno */
 #define _KERNEL
+
+#define min(a, b) ((a) < (b) ? (a) : (b) )	// radix.c
+
 #else
 #include <sys/ioctl.h>
 #endif
@@ -76,7 +79,6 @@ _long_to_time(long tlong)
     return((time_t)tlong);
 }
 
-#define min(a, b) ((a) < (b) ? (a) : (b) )	// radix.c
 /*
  * debugging macros from ip_dn_private.h
  */
@@ -211,6 +213,7 @@ size_t strlcpy(char * dst, const char * src, size_t siz);
 #define CTLFLAG_RW	2
 #define CTLFLAG_SECURE3	0	/* unsupported */
 #define CTLFLAG_VNET    0	/* unsupported */
+#define CTLFLAG_SECURE	0	/* unsupported */
 
 /* if needed, queue.h must be included here after list.h */
 

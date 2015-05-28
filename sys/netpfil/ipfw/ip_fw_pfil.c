@@ -461,12 +461,17 @@ ipfw_divert(struct mbuf **m0, int incoming, struct ipfw_rule_ref *rule,
 	    struct ip6_hdr *const ip6 = mtod(clone, struct ip6_hdr *);
 
 		if (ip6->ip6_nxt == IPPROTO_FRAGMENT) {
+#ifdef USERSPACE /* not supported */
+			FREE_PKT(clone);
+			return 1;
+#else
 			int nxt, off;
 
 			off = sizeof(struct ip6_hdr);
 			nxt = frag6_input(&clone, &off, 0);
 			if (nxt == IPPROTO_DONE)
 				return (0);
+#endif
 		}
 		break;
 	    }

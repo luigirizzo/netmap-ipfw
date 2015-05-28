@@ -503,6 +503,7 @@ flow6id_match( int curr_flow, ipfw_insn_u32 *cmd )
 static int
 search_ip6_addr_net (struct in6_addr * ip6_addr)
 {
+#ifndef USERSPACE
 	struct ifnet *mdc;
 	struct ifaddr *mdc2;
 	struct in6_ifaddr *fdm;
@@ -524,12 +525,16 @@ search_ip6_addr_net (struct in6_addr * ip6_addr)
 		}
 		if_addr_runlock(mdc);
 	}
+#endif /* !USERSPACE */
 	return 0;
 }
 
 static int
 verify_path6(struct in6_addr *src, struct ifnet *ifp, u_int fib)
 {
+#ifdef USERSPACE
+	return 0;
+#else /* !USERSPACE */
 	struct route_in6 ro;
 	struct sockaddr_in6 *dst;
 
@@ -572,7 +577,7 @@ verify_path6(struct in6_addr *src, struct ifnet *ifp, u_int fib)
 	/* found valid route */
 	RTFREE(ro.ro_rt);
 	return 1;
-
+#endif /* !USERSPACE */
 }
 
 static int
@@ -595,6 +600,7 @@ send_reject6(struct ip_fw_args *args, int code, u_int hlen, struct ip6_hdr *ip6)
 	struct mbuf *m;
 
 	m = args->m;
+#ifndef USERSPACE
 	if (code == ICMP6_UNREACH_RST && args->f_id.proto == IPPROTO_TCP) {
 		struct tcphdr *tcp;
 		tcp = (struct tcphdr *)((char *)ip6 + hlen);
@@ -624,6 +630,7 @@ send_reject6(struct ip_fw_args *args, int code, u_int hlen, struct ip6_hdr *ip6)
 #endif
 		icmp6_error(m, ICMP6_DST_UNREACH, code, 0);
 	} else
+#endif /* !USERSPACE */
 		FREE_PKT(m);
 
 	args->m = NULL;

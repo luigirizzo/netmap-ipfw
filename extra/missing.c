@@ -113,6 +113,24 @@ ip_output(struct mbuf *m, struct mbuf *opt, struct route *ro, int flags,
 	return 0;
 }
 
+/* XXX from sys/netinet6/ip_output.c */
+int
+ip6_output(struct mbuf *m0, struct ip6_pktopts *opt,
+    struct route_in6 *ro, int flags, struct ip6_moptions *im6o,
+    struct ifnet **ifpp, struct inpcb *inp)
+{
+	D("unimplemented");
+	return 0;
+}
+
+char *
+ip6_sprintf(char *ip6buf, const struct in6_addr *addr)
+{
+	strcpy(ip6buf, "unimplemented");
+	D("unimplemented");
+	return ip6buf;
+}
+
 struct tags_freelist tags_freelist;
 int tags_minlen = 64;
 int tags_freelist_count = 0;
