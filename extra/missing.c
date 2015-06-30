@@ -379,7 +379,7 @@ callout_run(void)
 			continue;
 		}
 		if (delta > 100)
-			D("running %p due at %d now %d", cur, cur->c_time, ticks);
+			RD(1,"running %p due at %d now %d", cur, cur->c_time, ticks);
 		TAILQ_REMOVE(&callout_head, cur, c_links.tqe);
 		cur->c_flags &= ~CALLOUT_ACTIVE;
 		cur->c_func(cur->c_arg);
@@ -546,7 +546,7 @@ kesysctl_emu_get(struct sockopt* sopt)
 			req.oldptr = &tmp;
 			f = GST.entry[i].fn;
 			ND("-- %s is a proc -- at %p", GST.entry[i].name, f);
-			ret = f(NULL, NULL, (int)(GST.entry[i].data), &req);
+			ret = f(NULL, NULL, (int)(intptr_t)(GST.entry[i].data), &req);
 			ND("-- %s returns %d", GST.entry[i].name, ret);
 			bcopy(&tmp, pdata, sizeof(tmp));
 		} else {
@@ -602,7 +602,7 @@ kesysctl_emu_set(void* p, int l)
 			req.newptr = pdata;
 			f = GST.entry[i].fn;
 			ND("-- %s is a proc -- at %p", GST.entry[i].name, f);
-			ret = f(NULL, NULL, (int)(GST.entry[i].data), &req);
+			ret = f(NULL, NULL, (int)(intptr_t)(GST.entry[i].data), &req);
 			ND("-- %s returns %d", GST.entry[i].name, ret);
 		} else {
 			bcopy(pdata, GST.entry[i].data, GST.entry[i].head.datalen);
