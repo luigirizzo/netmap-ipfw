@@ -746,6 +746,9 @@ static int
 schk_delete_cb(void *obj, void *arg)
 {
 	struct dn_schk *s = obj;
+	struct dn_profile **p = &s->profile;
+	int i, lim = 1 /* how many profiles */;
+
 #if 0
 	int a = (int)arg;
 	ND("sched %d arg %s%s",
@@ -760,9 +763,12 @@ schk_delete_cb(void *obj, void *arg)
 		dn_ht_free(s->siht, 0);
 	} else if (s->siht)
 		si_destroy(s->siht, NULL);
-	if (s->profile) {
-		free(s->profile, M_DUMMYNET);
-		s->profile = NULL;
+
+	for (i = 0; i < lim; i++) {
+		if (p[i]) {
+			free(p[i], M_DUMMYNET);
+			p[i] = NULL;
+		}
 	}
 	s->siht = NULL;
 	if (s->fp->destroy)
@@ -879,12 +885,13 @@ static int
 copy_profile(struct copy_args *a, struct dn_profile *p)
 {
 	int have = a->end - *a->start;
-	/* XXX here we check for max length */
+	/* XXX start with base length */
 	int profile_len = sizeof(struct dn_profile) - 
 		ED_MAX_SAMPLES_NO*sizeof(int);
 
 	if (p == NULL)
 		return 0;
+	profile_len += p->samples_no * sizeof(int); /* add actual samples */
 	if (have < profile_len) {
 		D("error have %d need %d", have, profile_len);
 		return 1;
@@ -996,17 +1003,17 @@ copy_data_helper(void *_o, void *_arg)
 				    &s->link, "link", n))
 					return DNHT_SCAN_END;
 				if (copy_profile(a, s->profile))
-					return DNHT_SCAN_END;
+					return DNHT_SCAN_END | DNHT_COPY_ERR;
 				if (copy_flowset(a, s->fs, 0))
 					return DNHT_SCAN_END;
 			}
 			if (a->flags & DN_C_SCH) {
 				if (copy_obj(a->start, a->end,
 				    &s->sch, "sched", n))
-					return DNHT_SCAN_END;
+					return DNHT_SCAN_END | DNHT_COPY_ERR;
 				/* list all attached flowsets */
 				if (copy_fsk_list(a, s, 0))
-					return DNHT_SCAN_END;
+					return DNHT_SCAN_END | DNHT_COPY_ERR;
 			}
 			if (a->flags & DN_C_FLOW)
 				copy_si(a, s, 0);
@@ -1024,7 +1031,7 @@ copy_data_helper(void *_o, void *_arg)
 			if (n < r[0] || n > r[1])
 				continue;
 			if (copy_flowset(a, fs, 0))
-				return DNHT_SCAN_END;
+				return DNHT_SCAN_END | DNHT_COPY_ERR;
 			copy_q(a, fs, 0);
 			break; /* we are done */
 		}
@@ -1561,6 +1568,8 @@ config_profile(struct dn_profile *pf, struct dn_id *arg)
 	/* XXX other sanity checks */
 	DN_BH_WLOCK();
 	for (; i < 2*DN_MAX_ID; i += DN_MAX_ID) {
+		struct dn_profile **pkpf, *kpf;
+
 		s = locate_scheduler(i);
 
 		if (s == NULL) {
@@ -1568,14 +1577,17 @@ config_profile(struct dn_profile *pf, struct dn_id *arg)
 			break;
 		}
 		dn_cfg.id++;
+		pkpf = &s->profile; /* prepare to handle multiple profiles */
+		kpf = *pkpf;
+		
 		/*
 		 * If we had a profile and the new one does not fit,
 		 * or it is deleted, then we need to free memory.
 		 */
-		if (s->profile && (pf->samples_no == 0 ||
-		    s->profile->oid.len < pf->oid.len)) {
-			free(s->profile, M_DUMMYNET);
-			s->profile = NULL;
+		if (kpf && (pf->samples_no == 0 ||
+		    kpf->oid.len < pf->oid.len)) {
+			free(kpf, M_DUMMYNET);
+			*pkpf = NULL;
 		}
 		if (pf->samples_no == 0)
 			continue;
@@ -1583,20 +1595,20 @@ config_profile(struct dn_profile *pf, struct dn_id *arg)
 		 * new profile, possibly allocate memory
 		 * and copy data.
 		 */
-		if (s->profile == NULL)
-			s->profile = malloc(pf->oid.len,
+		if (kpf == NULL)
+			*pkpf = kpf = malloc(pf->oid.len,
 				    M_DUMMYNET, M_NOWAIT | M_ZERO);
-		if (s->profile == NULL) {
+		if (kpf == NULL) {
 			D("no memory for profile %d", i);
 			err = ENOMEM;
 			break;
 		}
 		/* preserve larger length XXX double check */
-		olen = s->profile->oid.len;
+		olen = kpf->oid.len;
 		if (olen < pf->oid.len)
 			olen = pf->oid.len;
-		bcopy(pf, s->profile, pf->oid.len);
-		s->profile->oid.len = olen;
+		bcopy(pf, kpf, pf->oid.len);
+		kpf->oid.len = olen;
 	}
 	DN_BH_WUNLOCK();
 	return err;
@@ -1737,6 +1749,7 @@ compute_space(struct dn_id *cmd, struct copy_args *a)
 	int x = 0, need = 0;
 	int profile_size = sizeof(struct dn_profile) - 
 		ED_MAX_SAMPLES_NO*sizeof(int);
+	/* note, this may be short */
 
 	/* NOTE about compute space:
 	 * NP 	= dn_cfg.schk_count
@@ -1915,8 +1928,8 @@ dummynet_get(struct sockopt *sopt, void **compat)
 		}
 		goto done;
 	}
-	ND("have %d:%d sched %d, %d:%d links %d, %d:%d flowsets %d, "
-		"%d:%d si %d, %d:%d queues %d",
+	ND("have %d:%lu sched %d, %d:%lu links %d, %d:%lu flowsets %d, "
+		"%d:%lu si %d, %d:%lu queues %d",
 		dn_cfg.schk_count, sizeof(struct dn_sch), DN_SCH,
 		dn_cfg.schk_count, sizeof(struct dn_link), DN_LINK,
 		dn_cfg.fsk_count, sizeof(struct dn_fs), DN_FS,
@@ -1934,17 +1947,24 @@ dummynet_get(struct sockopt *sopt, void **compat)
 	a.start = &buf;
 	a.end = start + have;
 	/* start copying other objects */
+	/* XXX set error in case of no space */
 	if (compat) {
 		a.type = DN_COMPAT_PIPE;
-		dn_ht_scan(dn_cfg.schedhash, copy_data_helper_compat, &a);
+		error = dn_ht_scan(dn_cfg.schedhash, copy_data_helper_compat, &a);
 		a.type = DN_COMPAT_QUEUE;
 		dn_ht_scan(dn_cfg.fshash, copy_data_helper_compat, &a);
 	} else if (a.type == DN_FS) {
-		dn_ht_scan(dn_cfg.fshash, copy_data_helper, &a);
+		error = dn_ht_scan(dn_cfg.fshash, copy_data_helper, &a);
 	} else {
-		dn_ht_scan(dn_cfg.schedhash, copy_data_helper, &a);
+		error = dn_ht_scan(dn_cfg.schedhash, copy_data_helper, &a);
 	}
 	DN_BH_WUNLOCK();
+	if (error < 0) {
+		error = 0; /* we skip the sooptcopyout so we fail, hopefully */
+		goto done;
+	} else {
+		error = 0; /* all fine */
+	}
 
 	if (compat) {
 		*compat = start;
@@ -2100,7 +2120,8 @@ ip_dn_ctl(struct sockopt *sopt)
 			break;
 		}
 		l = sopt->sopt_valsize;
-		if (l < sizeof(struct dn_id) || l > 12000) {
+		/* XXX bumped size to 16000 for 3 profiles */
+		if (l < sizeof(struct dn_id) || l > 16000) {
 			D("argument len %d invalid", l);
 			break;
 		}

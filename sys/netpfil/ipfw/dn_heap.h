@@ -186,6 +186,7 @@ enum {  /* flags values.
         DNHT_INSERT	= 0x0010,	/* insert if not found */
         DNHT_UNIQUE	= 0x0020,	/* report error if already there */
         DNHT_REMOVE	= 0x0040,	/* remove on find or dn_ht_free */
+        DNHT_COPY_ERR	= 0x0080,	/* error during a copy */
 }; 
 
 #endif /* _IP_DN_HEAP_H */

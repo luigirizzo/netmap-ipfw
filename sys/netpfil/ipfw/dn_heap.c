@@ -507,7 +507,7 @@ dn_ht_scan(struct dn_ht *ht, int (*fn)(void *, void *), void *arg)
 				curp = (void **)((char *)cur + ht->ofs);
 			}
 			if (ret & DNHT_SCAN_END)
-				return found;
+				return (ret & DNHT_COPY_ERR) ? -1 : found;
 		}
 	}
 	return found;
