@@ -363,6 +363,15 @@ ipfw_check_frame(void *arg, struct mbuf **m0, struct ifnet *dst, int dir,
 
 	ret = 0;
 	/* Check result of ipfw_chk() */
+#if defined(USERSPACE)
+	/* fwd 1.1.1.1 causes the packet to be bounced back.
+	 * This is signalled by setting the low bit of the peer
+	 */
+	if (args.next_hop) {
+		uintptr_t *p = (void *)&(m->__m_peer);
+		*p |= 1;
+	}
+#endif
 	switch (i) {
 	case IP_FW_PASS:
 		break;
