@@ -205,7 +205,7 @@ struct dn_profile {
 	char	name[ED_MAX_NAME_LEN];
 	int	link_nr;
 	int	loss_level;
-	int	bandwidth;			// XXX use link bandwidth?
+	int	_bandwidth;			// XXX use link bandwidth? unused ?
 	int	samples_no;			/* actual len of samples[] */
 	int	samples[ED_MAX_SAMPLES_NO];	/* may be shorter */
 };

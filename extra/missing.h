@@ -598,7 +598,6 @@ int sysctl_handle_long(SYSCTL_HANDLER_ARGS);
 #endif
 #define SYSCTL_NODE(a,b,c,d,e,f) 	int a; (void)a
 #define SYSCTL_DECL(a)
-#define SYSCTL_PROC(a,b,c,d,e,f,g,h,i)		(void)g
 
 #define GST_HARD_LIMIT 100
 
@@ -638,15 +637,7 @@ struct sysctltable {
 	sysctl_pushback(STRINGIFY(a) "." STRINGIFY(c) + 1,	\
 		(d) | (SYSCTLTYPE_INT << 2), sizeof(*e), e, NULL)
 
-#define SYSCTL_VNET_INT(a,b,c,d,e,f,g)				\
-	sysctl_pushback(STRINGIFY(a) "." STRINGIFY(c) + 1,	\
-		(d) | (SYSCTLTYPE_INT << 2), sizeof(*e), e, NULL)
-
 #define SYSCTL_UINT(a,b,c,d,e,f,g)				\
-	sysctl_pushback(STRINGIFY(a) "." STRINGIFY(c) + 1,	\
-		(d) | (SYSCTLTYPE_UINT << 2), sizeof(*e), e, NULL)
-
-#define SYSCTL_VNET_UINT(a,b,c,d,e,f,g)				\
 	sysctl_pushback(STRINGIFY(a) "." STRINGIFY(c) + 1,	\
 		(d) | (SYSCTLTYPE_UINT << 2), sizeof(*e), e, NULL)
 
@@ -659,14 +650,13 @@ struct sysctltable {
 		(d) | (SYSCTLTYPE_ULONG << 2), sizeof(*e), e, NULL)
 #define TUNABLE_INT(a,b)
 
-/*
- * SYSCTL_VNET_PROC: We should call the function (g)
- * arguments are SYSCTL_HANDLER_ARGS
- */
-#define SYSCTL_VNET_PROC(a,b,c,d,e,f,g,h,i)			\
+#define SYSCTL_PROC(a,b,c,d,e,f,g,h,i)			\
 	sysctl_pushback(STRINGIFY(a) "." STRINGIFY(c) + 1,	\
-		(d), 4 /* XXX large */, NULL, g)
+		(d), 4 /* XXX large */, (void *)(f /* arg2 */), g)
 
+#define SYSCTL_VNET_PROC		SYSCTL_PROC
+#define SYSCTL_VNET_INT			SYSCTL_INT
+#define SYSCTL_VNET_UINT		SYSCTL_UINT
 
 void keinit_GST(void);
 void keexit_GST(void);

@@ -197,7 +197,8 @@ sysctl_handle_int(SYSCTL_HANDLER_ARGS)
 int
 sysctl_handle_long(SYSCTL_HANDLER_ARGS)
 {
-	D("called");
+	ND("called");
+	sysctl_handle_int(oidp, arg1, arg2, req);
 	return 0;
 }
 
@@ -535,6 +536,7 @@ kesysctl_emu_get(struct sockopt* sopt)
 		pdata = (unsigned char*)(entry+1);
 		pstring = pdata+GST.entry[i].head.datalen;
 		if  (entry->flags & SYSCTLTYPE_PROC) {
+			//int (*f)(SYSCTL_HANDLER_ARGS);
 			sysctl_h_fn_t *f;
 			int tmp = 0, ret;
 			struct sysctl_req req;
@@ -544,7 +546,7 @@ kesysctl_emu_get(struct sockopt* sopt)
 			req.oldptr = &tmp;
 			f = GST.entry[i].fn;
 			ND("-- %s is a proc -- at %p", GST.entry[i].name, f);
-			ret = f(NULL, NULL, 0, &req);
+			ret = f(NULL, NULL, (int)(GST.entry[i].data), &req);
 			ND("-- %s returns %d", GST.entry[i].name, ret);
 			bcopy(&tmp, pdata, sizeof(tmp));
 		} else {
@@ -573,7 +575,7 @@ kesysctl_emu_set(void* p, int l)
 	for (i=0; i<GST.count; i++) {
 		if (strcmp(GST.entry[i].name, (char *)pstring) != 0)
 			continue;
-		D("%s: match found! %s\n",__FUNCTION__,pstring);
+		ND("%s: match found! %s\n",__FUNCTION__,pstring);
 		//sanity check on len, not really useful now since
 		//we only accept int32
 		if (entry->datalen != GST.entry[i].head.datalen) {
@@ -600,7 +602,7 @@ kesysctl_emu_set(void* p, int l)
 			req.newptr = pdata;
 			f = GST.entry[i].fn;
 			ND("-- %s is a proc -- at %p", GST.entry[i].name, f);
-			ret = f(NULL, NULL, 0, &req);
+			ret = f(NULL, NULL, (int)(GST.entry[i].data), &req);
 			ND("-- %s returns %d", GST.entry[i].name, ret);
 		} else {
 			bcopy(pdata, GST.entry[i].data, GST.entry[i].head.datalen);

@@ -333,7 +333,9 @@ enum {
 	 */
 	SYSCTLTYPE_PROC		= 0x100,
 	CTLTYPE_INT		= (0x100 | (0<<2)),
-	CTLTYPE_UINT		= (0x100 | (1<<2))
+	CTLTYPE_UINT		= (0x100 | (1<<2)),
+	CTLTYPE_LONG		= (0x100 | (4<<2)),
+	CTLTYPE_ULONG		= (0x100 | (5<<2))
 };
 
 struct sysctlhead {
