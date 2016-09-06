@@ -22,6 +22,7 @@ ifeq ($(OSARCH),Darwin)
 endif
 
 ifeq ($(OSARCH),Linux)
+	CFLAGS2		+= -DINET
 	CFLAGS2		+= -D__BSD_VISIBLE
 	CFLAGS2		+= -D_GNU_SOURCE # ffsl
 	CFLAGS2		+= -DNEED_SIN_LEN
@@ -64,9 +65,10 @@ E_CFLAGS += -include $(M)/../extra/glue.h		# headers
 E_CFLAGS += -include $(M)/../extra/missing.h		# headers
 E_CFLAGS += -O2 -Wall -Werror
 E_CFLAGS += -fno-strict-aliasing
-E_CFLAGS += -pedantic
-E_CFLAGS += -Wno-gnu-empty-struct -Wno-zero-length-array
-E_CFLAGS += -Wno-gnu-zero-variadic-macro-arguments
+#E_CFLAGS += -pedantic # gcc 4.8.x has problems
+E_CFLAGS += -std=gnu99
+#E_CFLAGS += -Wno-gnu-empty-struct -Wno-zero-length-array
+#E_CFLAGS += -Wno-gnu-zero-variadic-macro-arguments
 E_CFLAGS += -Wno-variadic-macros
 E_CFLAGS += -Wno-pointer-arith
 
