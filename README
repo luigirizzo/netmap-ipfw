@@ -30,7 +30,7 @@ with small modifications listed below
 
 sbin/ipfw and the kernel counterpart communicate throuugh a
 TCP socket (localhost:5555) carrying the raw data that would
-normally be carried on seg/getsockopt.
+normally be carried on set/getsockopt.
 
 For testing purposes, opening a telnet session to port 5556 and
 typing some bytes will start a fake 'infinite source' so you can
