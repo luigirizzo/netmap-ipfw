@@ -98,10 +98,10 @@ ipfw_ctl_h(struct sockopt *s, int cmd, int dir, int len, void __user *user)
 	s->sopt_td = &t;
 	
 	if (ip_fw_ctl_ptr && cmd != IP_DUMMYNET3 && (cmd == IP_FW3 ||
-	    cmd < IP_DUMMYNET_CONFIGURE))
+												 cmd < IP_DUMMYNET_CONFIGURE))
 		ret = ip_fw_ctl_ptr(s);
 	else if (ip_dn_ctl_ptr && (cmd == IP_DUMMYNET3 ||
-	    cmd >= IP_DUMMYNET_CONFIGURE))
+							   cmd >= IP_DUMMYNET_CONFIGURE))
 		ret = ip_dn_ctl_ptr(s);
 	
 	return -ret;	/* errors are < 0 on linux */
@@ -165,10 +165,10 @@ extern int (*sysuninit_vnet_ipfw_uninit)(void *);
  */
 #include <sys/module.h>
 struct mod_args {
-        const char *name;
-        int order;
-        struct moduledata *mod;
-        int (*init)(void *);
+	const char *name;
+	int order;
+	struct moduledata *mod;
+	int (*init)(void *);
 	int (*uninit)(void *);
 };
 
@@ -177,7 +177,7 @@ static struct mod_args mods[10];        /* hard limit to 10 modules */
 
 int
 my_mod_register(const char *name, int order,
-        struct moduledata *mod, int (*init)(void *), int (*uninit)(void *));
+				struct moduledata *mod, int (*init)(void *), int (*uninit)(void *));
 /*
  * my_mod_register should be called automatically as the init
  * functions in the submodules. Unfortunately this compiler/linker
@@ -185,57 +185,57 @@ my_mod_register(const char *name, int order,
  */
 int
 my_mod_register(const char *name, int order,
-        struct moduledata *mod, int (*init)(void *), int (*uninit)(void *))
+				struct moduledata *mod, int (*init)(void *), int (*uninit)(void *))
 {
-        struct mod_args m;
+	struct mod_args m;
  
-        m.name = name;
-        m.order = order;
-        m.mod = mod;
-        m.init = init;
-        m.uninit = uninit;
+	m.name = name;
+	m.order = order;
+	m.mod = mod;
+	m.init = init;
+	m.uninit = uninit;
 
-        ND("called for %s", name);
-        if (mod_idx < sizeof(mods) / sizeof(mods[0]))
-                mods[mod_idx++] = m;
-        return 0;
+	ND("called for %s", name);
+	if (mod_idx < sizeof(mods) / sizeof(mods[0]))
+		mods[mod_idx++] = m;
+	return 0;
 }
 
 static void
 init_children(void)
 {
-        unsigned int i;
+	unsigned int i;
 
-        /* Call the functions registered at init time. */
-        printf("%s mod_idx value %d\n", __FUNCTION__, mod_idx);
-        for (i = 0; i < mod_idx; i++) {
-                struct mod_args *m = &mods[i];
-                printf("+++ start module %d %s %s at %p order 0x%x\n",
-                        i, m->name, m->mod ? m->mod->name : "SYSINIT",
-                        m->mod, m->order);
-                if (m->mod && m->mod->evhand)
-                        m->mod->evhand(NULL, MOD_LOAD, m->mod->priv);
-                else if (m->init)
-                        m->init(NULL);
-        }
+	/* Call the functions registered at init time. */
+	printf("%s mod_idx value %d\n", __FUNCTION__, mod_idx);
+	for (i = 0; i < mod_idx; i++) {
+		struct mod_args *m = &mods[i];
+		printf("+++ start module %d %s %s at %p order 0x%x\n",
+			   i, m->name, m->mod ? m->mod->name : "SYSINIT",
+			   m->mod, m->order);
+		if (m->mod && m->mod->evhand)
+			m->mod->evhand(NULL, MOD_LOAD, m->mod->priv);
+		else if (m->init)
+			m->init(NULL);
+	}
 }
 
 static void
 fini_children(void)
 {
-        int i;
+	int i;
 
-        /* Call the functions registered at init time. */
-        for (i = mod_idx - 1; i >= 0; i--) {
-                struct mod_args *m = &mods[i];
-                printf("+++ end module %d %s %s at %p order 0x%x\n",
-                        i, m->name, m->mod ? m->mod->name : "SYSINIT",
-                        m->mod, m->order);
-                if (m->mod && m->mod->evhand)
-                        m->mod->evhand(NULL, MOD_UNLOAD, m->mod->priv);
-                else if (m->uninit)
-                        m->uninit(NULL);
-        }
+	/* Call the functions registered at init time. */
+	for (i = mod_idx - 1; i >= 0; i--) {
+		struct mod_args *m = &mods[i];
+		printf("+++ end module %d %s %s at %p order 0x%x\n",
+			   i, m->name, m->mod ? m->mod->name : "SYSINIT",
+			   m->mod, m->order);
+		if (m->mod && m->mod->evhand)
+			m->mod->evhand(NULL, MOD_UNLOAD, m->mod->priv);
+		else if (m->uninit)
+			m->uninit(NULL);
+	}
 }
 /*--- end of module binding helper functions ---*/
 
@@ -246,9 +246,9 @@ ipfw_module_init(void)
 
 	my_mod_register("ipfw",  1, moddesc_ipfw, NULL, NULL);
 	my_mod_register("sy_ipfw",  2, NULL,
-		sysinit_ipfw_init, sysuninit_ipfw_destroy);
+					sysinit_ipfw_init, sysuninit_ipfw_destroy);
 	my_mod_register("sy_Vnet_ipfw",  3, NULL,
-		sysinit_vnet_ipfw_init, sysuninit_vnet_ipfw_uninit);
+					sysinit_vnet_ipfw_init, sysuninit_vnet_ipfw_uninit);
 	my_mod_register("dummynet",  4, moddesc_dummynet, NULL, NULL);
 	my_mod_register("dn_fifo",  5, moddesc_dn_fifo, NULL, NULL);
 	my_mod_register("dn_wf2qp",  6, moddesc_dn_wf2qp, NULL, NULL);

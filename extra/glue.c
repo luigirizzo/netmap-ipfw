@@ -20,13 +20,13 @@
 void
 ipfw_show_nat(int ac, char **av)
 {
-        D("unsupported");
+	D("unsupported");
 }
 
 void
 ipfw_config_nat(int ac, char **av)
 {
-        D("unsupported");
+	D("unsupported");
 }
 #endif /* HAVE_NAT */
 
@@ -34,39 +34,39 @@ ipfw_config_nat(int ac, char **av)
 /* missing in linux and windows */
 long long int
 strtonum(const char *nptr, long long minval, long long maxval,
-         const char **errstr)
+	 const char **errstr)
 {
-        long long ret;
-        int errno_c = errno;    /* save actual errno */
+	long long ret;
+	int errno_c = errno;    /* save actual errno */
 
-        errno = 0;
+	errno = 0;
 #ifdef TCC
-        ret = strtol(nptr, (char **)errstr, 0);
+	ret = strtol(nptr, (char **)errstr, 0);
 #else
-        ret = strtoll(nptr, (char **)errstr, 0);
+	ret = strtoll(nptr, (char **)errstr, 0);
 #endif
-        /* We accept only a string that represent exactly a number (ie. start
-         * and end with a digit).
-         * FreeBSD version wants errstr==NULL if no error occurs, otherwise
-         * errstr should point to an error string.
-         * For our purspose, we implement only the invalid error, ranges
-         * error aren't checked
-         */
-        if (errno != 0 || nptr == *errstr || **errstr != '\0')
-                *errstr = "invalid";
-        else  {
-                *errstr = NULL;
-                errno = errno_c;
-        }
-        return ret;
+	/* We accept only a string that represent exactly a number (ie. start
+	 * and end with a digit).
+	 * FreeBSD version wants errstr==NULL if no error occurs, otherwise
+	 * errstr should point to an error string.
+	 * For our purspose, we implement only the invalid error, ranges
+	 * error aren't checked
+	 */
+	if (errno != 0 || nptr == *errstr || **errstr != '\0')
+		*errstr = "invalid";
+	else  {
+		*errstr = NULL;
+		errno = errno_c;
+	}
+	return ret;
 }
 
 int
 ishexnumber(int c)
 {
-        return ((c >= '0' && c <= '9') ||
-                (c >= 'a' && c <= 'f') ||
-                (c >= 'A' && c <= 'F') );
+	return ((c >= '0' && c <= '9') ||
+			(c >= 'a' && c <= 'f') ||
+			(c >= 'A' && c <= 'F') );
 }
 
 #endif /* NEED_STRTONUM */
@@ -82,31 +82,31 @@ int optreset;	/* missing in linux */
  */
 size_t
 strlcpy(dst, src, siz)
-        char *dst;
-        const char *src;
-        size_t siz;
+	 char *dst;
+	 const char *src;
+	 size_t siz;
 {
-        char *d = dst;
-        const char *s = src;
-        size_t n = siz;
+	char *d = dst;
+	const char *s = src;
+	size_t n = siz;
  
-        /* Copy as many bytes as will fit */
-        if (n != 0 && --n != 0) {
-                do {
-                        if ((*d++ = *s++) == 0)
-                                break;
-                } while (--n != 0);
-        }
+	/* Copy as many bytes as will fit */
+	if (n != 0 && --n != 0) {
+		do {
+			if ((*d++ = *s++) == 0)
+				break;
+		} while (--n != 0);
+	}
 
-        /* Not enough room in dst, add NUL and traverse rest of src */
-        if (n == 0) {
-                if (siz != 0)
-                        *d = '\0';              /* NUL-terminate dst */
-                while (*s++)
-                        ;
-        }
+	/* Not enough room in dst, add NUL and traverse rest of src */
+	if (n == 0) {
+		if (siz != 0)
+			*d = '\0';              /* NUL-terminate dst */
+		while (*s++)
+			;
+	}
 
-        return(s - src - 1);    /* count does not include NUL */
+	return(s - src - 1);    /* count does not include NUL */
 }
 
 
@@ -145,7 +145,7 @@ int do_cmd(int optname, void *optval, uintptr_t optlen);
  */
 int
 sysctlbyname(const char *name, void *oldp, size_t *oldlenp, void *newp,
-         size_t newlen)
+	 size_t newlen)
 {
 #if defined (EMULATE_SYSCTL)
 	/*
@@ -267,10 +267,10 @@ sysctlbyname(const char *name, void *oldp, size_t *oldlenp, void *newp,
 				if( name == NULL )
 					goto print;
 				if ( (strncmp(pstring,name,strlen(name)) == 0) && ( pstring[strlen(name)]=='\0' || pstring[strlen(name)]=='.' ) )
-						goto print;
+					goto print;
 				else
-						goto skip;
-print:
+					goto skip;
+			print:
 				fprintf(fp, "%s: ",pstring);
 				switch( entry->flags >> 2 )
 				{
@@ -291,7 +291,7 @@ print:
 					fprintf(fp, "\t(read only)\n");
 				else
 					fprintf(fp, "\n");
-skip:			;
+			skip:			;
 			}
 			entry = (struct sysctlhead*)((unsigned char*)entry + entry->blocklen);
 		}
@@ -424,7 +424,7 @@ readn(int fd, char *buf, int len)
 
 int
 __sockopt2(int s, int level, int optname, void *optval, socklen_t *optlen,
-		enum sopt_dir dir)
+   enum sopt_dir dir)
 {
 	struct wire_hdr r;
 	int len = optlen && optval ? *optlen : 0;
@@ -472,7 +472,7 @@ __sockopt2(int s, int level, int optname, void *optval, socklen_t *optlen,
  */
 int
 getsockopt2(int s, int level, int optname, void *optval,
-	socklen_t *optlen)
+			socklen_t *optlen)
 {
 	return __sockopt2(s, level, optname, optval, optlen, SOPT_GET);
 }
@@ -482,7 +482,7 @@ getsockopt2(int s, int level, int optname, void *optval,
  */
 int
 setsockopt2(int s, int level, int optname, void *optval,
-	socklen_t optlen)
+			socklen_t optlen)
 {
 	/* optlen not changed, use the local address */
 	return __sockopt2(s, level, optname, optval, &optlen, SOPT_SET);
@@ -505,15 +505,15 @@ do_connect(const char *addr, int port)
 	/* open the socket */
 #ifdef NETLINK
 
-struct rtnl_handle rth;
+	struct rtnl_handle rth;
 
 	conn_fd = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_ROUTE);
 #else
-        struct sockaddr_in server;		/* server address */
+	struct sockaddr_in server;		/* server address */
 	const char *s;
 
-        conn_fd = socket(AF_INET, SOCK_STREAM, 0);
-        if (conn_fd < 0) {
+	conn_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (conn_fd < 0) {
 		perror("socket");
 		return -1;
 	}
@@ -534,7 +534,7 @@ struct rtnl_handle rth;
 	server.sin_port = htons(port);
 
 	/* connect to the server */
-        if (connect(conn_fd, (struct sockaddr*) &server, sizeof(server)) < 0) {
+	if (connect(conn_fd, (struct sockaddr*) &server, sizeof(server)) < 0) {
 		perror("connect");
 		return -1;
 	}
@@ -542,14 +542,14 @@ struct rtnl_handle rth;
 #undef setsockopt
 #undef getsockopt
 #endif
-	{
-		int on = 1, ret;
-		ret = setsockopt(conn_fd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on));
-		ND("set TCP_NODELAY %d returns %d", on, ret);
-	}
-	if (0)
-		fprintf(stderr, "connected to %s:%d\n",
-			inet_ntoa(server.sin_addr), ntohs(server.sin_port));
+		{
+			int on = 1, ret;
+			ret = setsockopt(conn_fd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on));
+			ND("set TCP_NODELAY %d returns %d", on, ret);
+		}
+		if (0)
+			fprintf(stderr, "connected to %s:%d\n",
+					inet_ntoa(server.sin_addr), ntohs(server.sin_port));
 #endif
-	return conn_fd;
+		return conn_fd;
 }

@@ -88,9 +88,9 @@ netmap_fwd(struct my_netmap_port *port)
 		return 0;
 	}
 
-again:
+ again:
 	/* scan all output rings; dr is the destination ring index */
-        for (dr = dst->first_tx_ring; i < n && dr <= dst->last_tx_ring; dr++) {
+	for (dr = dst->first_tx_ring; i < n && dr <= dst->last_tx_ring; dr++) {
 		struct netmap_ring *ring = NETMAP_TXRING(dst->nifp, dr);
 
 		__builtin_prefetch(ring);
@@ -130,8 +130,8 @@ again:
 					src->buf_idx = tmp;
 				} else if (port->peer->allocator_id == 1) { // no indirect
 					nm_pkt_copy(NETMAP_BUF(sr, src->buf_idx),
-						NETMAP_BUF(ring, dst->buf_idx),
-						dst->len);
+								NETMAP_BUF(ring, dst->buf_idx),
+								dst->len);
 				} else {
 					dst->ptr = (uintptr_t)NETMAP_BUF(sr, src->buf_idx);
 					dst->flags = NS_INDIRECT;
@@ -142,8 +142,8 @@ again:
 				ND("copy from mbuf");
 				dst->len = m->__m_extlen;
 				nm_pkt_copy(m->__m_extbuf,
-					NETMAP_BUF(ring, dst->buf_idx),
-					dst->len);
+							NETMAP_BUF(ring, dst->buf_idx),
+							dst->len);
 				FREE_PKT(m);
 			} else {
 				panic("bad slot");
@@ -217,7 +217,7 @@ netmap_read(struct sess *sess, void *arg)
 	bzero(&args, sizeof(args));
 
 	/* scan all rings */
-        for (si = srcp->first_rx_ring; si <= srcp->last_rx_ring; si++) {
+	for (si = srcp->first_rx_ring; si <= srcp->last_rx_ring; si++) {
 	    struct netmap_ring *ring = NETMAP_RXRING(srcp->nifp, si);
 
 	    __builtin_prefetch(ring);
@@ -225,81 +225,81 @@ netmap_read(struct sess *sess, void *arg)
 		    continue;
 	    __builtin_prefetch(&ring->slot[ring->cur]);
 	    while (!nm_ring_empty(ring)) {
-		u_int src, idx, len;
-		struct netmap_slot *slot;
-		void *buf;
+			u_int src, idx, len;
+			struct netmap_slot *slot;
+			void *buf;
 
-		/* make sure we have room before looking at the input */
-		if (peer->cur_txq >= MY_TXQ_LEN) {
-			netmap_fwd(peer);
-			continue;
-		}
-		src = ring->cur;
-		slot = &ring->slot[src];
-		__builtin_prefetch (slot+1);
-		idx = slot->buf_idx;
-		buf = (u_char *)NETMAP_BUF(ring, idx);
-		if (idx < 2) {
-		    D("%s bogus RX index at offset %d",
-			    srcp->nifp->ni_name, src);
-		    sleep(2);
-		}
-		__builtin_prefetch(buf);
-		ring->head = ring->cur = nm_ring_next(ring, src);
+			/* make sure we have room before looking at the input */
+			if (peer->cur_txq >= MY_TXQ_LEN) {
+				netmap_fwd(peer);
+				continue;
+			}
+			src = ring->cur;
+			slot = &ring->slot[src];
+			__builtin_prefetch (slot+1);
+			idx = slot->buf_idx;
+			buf = (u_char *)NETMAP_BUF(ring, idx);
+			if (idx < 2) {
+				D("%s bogus RX index at offset %d",
+				  srcp->nifp->ni_name, src);
+				sleep(2);
+			}
+			__builtin_prefetch(buf);
+			ring->head = ring->cur = nm_ring_next(ring, src);
 
-		/* prepare to invoke the firewall */
-		dm = dm0;	// XXX clear all including tags
-		args.m = &dm;
-		len = slot->len;
-		dm.m_flags = M_STACK;
-		// remember original buf and peer
-		dm.__m_extbuf = buf;
-		dm.__m_extlen = len;
-		dm.__m_peer = peer;
-		/* the routine to call in netisr_dispatch */
-		dm.__m_callback = netmap_enqueue;
+			/* prepare to invoke the firewall */
+			dm = dm0;	// XXX clear all including tags
+			args.m = &dm;
+			len = slot->len;
+			dm.m_flags = M_STACK;
+			// remember original buf and peer
+			dm.__m_extbuf = buf;
+			dm.__m_extlen = len;
+			dm.__m_peer = peer;
+			/* the routine to call in netisr_dispatch */
+			dm.__m_callback = netmap_enqueue;
 
-	/* XXX can we use check_frame ? */
-	    if (1) { /* L2 */
-		hdrlen = 0;
-	    } else {
-		hdrlen = ((uint16_t *)buf)[6] == htons(0x8100) ? 18 : 14;
-	    }
-		dm.m_pkthdr.rcvif = &port->ifp;
-		ND(1, "hdrlen %d", hdrlen);
-		dm.m_data = buf + hdrlen;	// skip mac + vlan hdr if any
-		dm.m_len = dm.m_pkthdr.len = len - hdrlen;
-		dm.__max_m_len = dm.m_len;
-		ND("slot %d len %d", i, dm.m_len);
-		// XXX ipfw_chk is slightly faster
-		//ret = ipfw_chk(&args);
-	    if (hdrlen > 0) {
-		ipfw_check_packet(NULL, &args.m, NULL, PFIL_IN, NULL);
-	    } else {
-		ipfw_check_frame(NULL, &args.m, NULL, PFIL_IN, NULL);
-	    }
+			/* XXX can we use check_frame ? */
+			if (1) { /* L2 */
+				hdrlen = 0;
+			} else {
+				hdrlen = ((uint16_t *)buf)[6] == htons(0x8100) ? 18 : 14;
+			}
+			dm.m_pkthdr.rcvif = &port->ifp;
+			ND(1, "hdrlen %d", hdrlen);
+			dm.m_data = buf + hdrlen;	// skip mac + vlan hdr if any
+			dm.m_len = dm.m_pkthdr.len = len - hdrlen;
+			dm.__max_m_len = dm.m_len;
+			ND("slot %d len %d", i, dm.m_len);
+			// XXX ipfw_chk is slightly faster
+			//ret = ipfw_chk(&args);
+			if (hdrlen > 0) {
+				ipfw_check_packet(NULL, &args.m, NULL, PFIL_IN, NULL);
+			} else {
+				ipfw_check_frame(NULL, &args.m, NULL, PFIL_IN, NULL);
+			}
 
-		if (args.m != NULL) {	// ok. forward
-			/*
-			 * XXX TODO remember to clean up any tags that
-			 * ipfw may have allocated
-			 */
-			/*
-			 * if peer has been modified, bounce back
-			 * to the original
-			 */
-			struct my_netmap_port *d =
-				(dm.__m_peer == peer) ? peer: port;
-			u_int dst = d->cur_txq;
-			struct txq_entry *x = d->q;
-			if (d != peer)
-				fprintf(stderr, "packet bounced back\n");
-			x[dst].ring_or_mbuf = ring;
-			x[dst].slot_idx = src;
-			x[dst].flags = TXQ_IS_SLOT;
-			d->cur_txq++;
-		}
-		ND("exit at slot %d", next_i);
+			if (args.m != NULL) {	// ok. forward
+				/*
+				 * XXX TODO remember to clean up any tags that
+				 * ipfw may have allocated
+				 */
+				/*
+				 * if peer has been modified, bounce back
+				 * to the original
+				 */
+				struct my_netmap_port *d =
+					(dm.__m_peer == peer) ? peer: port;
+				u_int dst = d->cur_txq;
+				struct txq_entry *x = d->q;
+				if (d != peer)
+					fprintf(stderr, "packet bounced back\n");
+				x[dst].ring_or_mbuf = ring;
+				x[dst].slot_idx = src;
+				x[dst].flags = TXQ_IS_SLOT;
+				d->cur_txq++;
+			}
+			ND("exit at slot %d", next_i);
 	    }
 	}
 	/* process packets sent to the opposite queue */
@@ -322,42 +322,42 @@ netmap_add_port(const char *dev)
 {
 	static struct sess *s1 = NULL;	// XXX stateful; bad!
 	struct my_netmap_port *port;
-        int l;
-        struct sess *s2;
+	int l;
+	struct sess *s2;
 
-        D("opening netmap device %s", dev);
-        l = strlen(dev) + 1;
+	D("opening netmap device %s", dev);
+	l = strlen(dev) + 1;
 	if (l >= IFNAMSIZ) {
 		D("name %s too long, max %d", dev, IFNAMSIZ - 1);
 		sleep(2);
 		return;
 	}
-        port = calloc(1, sizeof(*port));
+	port = calloc(1, sizeof(*port));
 	port->d = nm_open(dev, NULL, 0, NULL);
-        if (port->d == NULL) {
-                D("error opening %s", dev);
-                kern_free(port);	// XXX compat
-                return;
-        }
+	if (port->d == NULL) {
+		D("error opening %s", dev);
+		kern_free(port);	// XXX compat
+		return;
+	}
 	strncpy(port->ifp.if_xname, dev, IFNAMSIZ-1);
 	port->allocator_id = port->d->req.nr_arg2;
 	D("--- mem_id %d", port->allocator_id);
-        s2 = new_session(port->d->fd, netmap_read, port, WANT_READ);
+	s2 = new_session(port->d->fd, netmap_read, port, WANT_READ);
 	port->sess = s2;
-        D("create sess %p my_netmap_port %p", s2, port);
-        if (s1 == NULL) {       /* first of a pair */
-                s1 = s2;
-        } else {                /* second of a pair, cross link */
-                struct my_netmap_port *peer = s1->arg;
-                port->peer = peer;
-                peer->peer = port;
+	D("create sess %p my_netmap_port %p", s2, port);
+	if (s1 == NULL) {       /* first of a pair */
+		s1 = s2;
+	} else {                /* second of a pair, cross link */
+		struct my_netmap_port *peer = s1->arg;
+		port->peer = peer;
+		peer->peer = port;
 
 		port->can_swap_bufs = peer->can_swap_bufs =
 			(port->allocator_id == peer->allocator_id);
-                D("%p %s %d <-> %p %s %d %s",
-                        port, port->d->req.nr_name, port->allocator_id,
-                        peer, peer->d->req.nr_name, peer->allocator_id,
-			port->can_swap_bufs ? "SWAP" : "COPY");
-                s1 = NULL;
-        }
+		D("%p %s %d <-> %p %s %d %s",
+		  port, port->d->req.nr_name, port->allocator_id,
+		  peer, peer->d->req.nr_name, peer->allocator_id,
+		  port->can_swap_bufs ? "SWAP" : "COPY");
+		s1 = NULL;
+	}
 }

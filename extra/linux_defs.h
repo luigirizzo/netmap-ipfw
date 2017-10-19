@@ -33,12 +33,12 @@ typedef struct mtx rwlock_t;
 
 /* defined in linux/sctp.h with no bsd definition */
 struct sctphdr {
-        uint16_t src_port;      /* source port */
-        uint16_t dest_port;     /* destination port */
-        uint32_t v_tag;         /* verification tag of packet */
-        uint32_t checksum;      /* Adler32 C-Sum */
-        /* chunks follow... */
-}       SCTP_PACKED;
+	uint16_t src_port;		/* source port */
+	uint16_t dest_port;		/* destination port */
+	uint32_t v_tag;			/* verification tag of packet */
+	uint32_t checksum;		/* Adler32 C-Sum */
+	/* chunks follow... */
+}	SCTP_PACKED;
 
 /* missing definition */
 #define TH_FIN  0x01
@@ -108,7 +108,7 @@ int in_cksum(struct mbuf *m, int len);
 struct pf_mtag {
 	void            *hdr;           /* saved hdr pos in mbuf, for ECN */
 	sa_family_t      af;            /* for ECN */
-        u_int32_t        qid;           /* queue id */
+	u_int32_t        qid;           /* queue id */
 };
 #endif
 
