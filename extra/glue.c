@@ -120,6 +120,27 @@ strlcpy(dst, src, siz)
 #include <netinet/ip_fw.h>
 #include <netinet/ip_dummynet.h>
 int do_cmd(int optname, void *optval, uintptr_t optlen);
+
+#ifndef CTL_MAXNAME
+#define CTL_MAXNAME 24
+#endif
+int sysctl(const int *name, u_int namelen, void *oldp, size_t *oldlenp,
+	   const void *newp, size_t newlen);
+
+int sysctlnametomib(const char *name, int *mibp, size_t *sizep);
+
+int
+__sysctlbyname(const char *name, void *oldp, size_t *oldlenp,
+    const void *newp, size_t newlen)
+{
+	int real_oid[CTL_MAXNAME+2];
+	size_t oidlen;
+
+	oidlen = sizeof(real_oid) / sizeof(int);
+	if (sysctlnametomib(name, real_oid, &oidlen) < 0)
+		return (-1);
+	return (sysctl(real_oid, oidlen, oldp, oldlenp, newp, newlen));
+}
 #endif /* EMULATE_SYSCTL */
 
 /*
@@ -143,11 +164,14 @@ int do_cmd(int optname, void *optval, uintptr_t optlen);
  *
  * Returns 0 on success, -1 on errors.
  */
+
 int
 sysctlbyname(const char *name, void *oldp, size_t *oldlenp, void *newp,
 	 size_t newlen)
 {
 #if defined (EMULATE_SYSCTL)
+	if (!strcmp(name, "vm.overcommit"))
+		return __sysctlbyname(name, oldp, oldlenp, newp, newlen);
 	/*
 	 * we embed the sysctl request in the usual sockopt mechanics.
 	 * the sockopt buffer il filled with a dn_id with IP_DUMMYNET3
