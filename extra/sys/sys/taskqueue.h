@@ -13,13 +13,27 @@ struct task {
 #define TASK_INIT(a,b,c,d) do { 				\
 	(a)->func = (c); } while (0)
 #else
+
+#if !defined(__FreeBSD__)
 struct task {
 	void (*func)(void);
 };
 #define taskqueue_enqueue_fast(tq, ta)	(ta)->func()
 #define TASK_INIT(a,b,c,d) do { 				\
 	(a)->func = (void (*)(void))c; } while (0)
+#else
+#include <sys/_task.h>
+#include <sys/taskqueue.h>
 
+#define TASK_INIT(task, priority, func, context) do {	\
+	(task)->ta_pending = 0;				\
+	(task)->ta_priority = (priority);		\
+	(task)->ta_func = (func);			\
+	(task)->ta_context = (context);			\
+	} while (0)
+
+#define taskqueue_enqueue_fast(tq, ta)	(ta)->ta_func((ta)->ta_context, 0)
+#endif
 
 #endif
 typedef void (*taskqueue_enqueue_fn)(void *context);
