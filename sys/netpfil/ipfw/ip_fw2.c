@@ -68,6 +68,18 @@ __FBSDID("$FreeBSD: head/sys/netpfil/ipfw/ip_fw2.c 272840 2014-10-09 19:32:35Z m
 
 #include <netpfil/pf/pf_mtag.h>
 
+#ifdef __FreeBSD__
+typedef volatile u_int rt_gen_t;    /* tree generation (for adds) */
+
+struct route {
+	struct  rtentry *ro_rt;
+	struct  llentry *ro_lle;
+	struct  sockaddr ro_dst;
+	uint16_t    ro_mtu; /* saved ro_rt mtu */
+	uint16_t    spare;
+};
+#endif
+
 #include <netinet/in.h>
 #include <netinet/in_var.h>
 #include <netinet/in_pcb.h>
