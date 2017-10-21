@@ -330,10 +330,10 @@ ipfw_check_frame(void *arg, struct mbuf **m0, struct ifnet *dst, int dir,
 		}
 	}
 	eh = mtod(m, struct ether_header *);
+	save_eh = *eh;			/* save copy for restore below */
 #if defined(USERSPACE)
 	args.eh = eh;
 #else
-	save_eh = *eh;			/* save copy for restore below */
 	args.eh = &save_eh;	/* MAC header for bridged/MAC packets	*/
 #endif
 	m_adj(m, ETHER_HDR_LEN);	/* strip ethernet header */
