@@ -245,7 +245,7 @@ print_flowset_parms(struct dn_fs *fs, char *prefix)
 		    fs->max_th,
 		    1.0 * fs->max_p / (double)(1 << SCALE_RED));
 		if (fs->flags & DN_IS_ECN)
-			strncat(red, " (ecn)", 6);
+			strncat(red, " (ecn)", 7);
 	} else
 		sprintf(red, "droptail");
 

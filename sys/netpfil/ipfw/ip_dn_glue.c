@@ -631,7 +631,7 @@ dn_c_copy_pipe(struct dn_schk *s, struct copy_args *a, int nq)
 	if (!is7) {
 		if (s->profile) {
 			struct dn_profile *pf = s->profile;
-			strncpy(pipe8->name, pf->name, sizeof(pf->name));
+			strncpy(pipe8->name, pf->name, sizeof(pipe8->name));
 			pipe8->loss_level = pf->loss_level;
 			pipe8->samples_no = pf->samples_no;
 		}
